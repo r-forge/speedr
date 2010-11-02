@@ -1,0 +1,9 @@
+Package:	speedR
+Version:	1.0
+Title:	A GUI based filtering Tool
+Author:	Ilhami Visne
+Maintainer:	Ilhami Visne <ilhami.visne@ait.ac.at>
+Description:	speedR is a gui based utility to filter matrix alike data objects easily.
+Depends: R (>= 2.10), rJava (>= 0.8-5)
+License:	GPL
+ZipData:	yes
