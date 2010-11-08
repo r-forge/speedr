@@ -6,7 +6,7 @@
    assign(".speedRInitialized", FALSE, .speedR_Env)   
 }
 
-speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){	
+speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){		
 		
 	if(!get(".speedRInitialized",.speedR_Env)){
 	
@@ -23,6 +23,7 @@ speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){
 			jvmparameters = paste("-Xmx",maxmemory,"m",sep="");
 			options(java.parameters = jvmparameters)
 		}
+		
 		require(iplots)
 		
 		jarfolder <- system.file("jri", package = "rJava")
@@ -66,10 +67,10 @@ speedR <- function(maxmemory = NULL,...){
 
 speedR.importany<-function(file=NULL,rowstart=NULL,rowend=NULL,colstart=NULL,colend=NULL,
 						   hasRowNames = FALSE, rowNamesColumnIndex = NULL,hasColumnNames = FALSE, 
-						   columnNamesRowIndex = NULL, separator = NULL, quote = NULL,maxmemory = 70, loglevel = "INFO",debug = FALSE){	
+						   columnNamesRowIndex = NULL, separator = NULL, quote = NULL,maxmemory = NULL, ...){	
     
 	
-	speedR.init(maxmemory,loglevel,debug)
+	speedR.init(maxmemory,...)
 	
 	
 	if(is.null(file)) stop("Please give a valid file path argument")

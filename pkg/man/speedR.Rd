@@ -5,13 +5,14 @@
   Starts the speedR GUI window.
 }
 \usage{
-  speedR()
+  speedR(maxmemory=NULL,...)
 }
 
 \arguments{
   \item{maxmemory}{the maximum allocatable memory in Mb. If speedR is already once started, 
 				   calling speedR with a different value will have no effect. To change the memory, 
 				   R must be restarted and speedR has to be called with the new value.}
+  \item{...}{Other optional parameters sent to \link{speedR.init} like debugging and log level.}
 }
 
 \details{
@@ -26,6 +27,8 @@
 }
 
 \examples{
+\dontrun{
   speedR() #calls speedR with default memory value: on Windows 70% of the available free memory, on Unix like systems 512 Mb
   speedR(maxmemory = 1024) # start speedR with 1024 Mb memory
+  }
 }
