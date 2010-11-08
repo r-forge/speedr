@@ -18,7 +18,8 @@ echo '<?xml version="1.0" encoding="UTF-8"?>';
   <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 	<title><?php echo $group_name; ?></title>
-	<link href="<?php echo $themeroot; ?>styles/estilo1.css" rel="stylesheet" type="text/css" />	
+	<link href="<?php echo $themeroot; ?>styles/estilo1.css" rel="stylesheet" type="text/css" />
+	<link href="css/messages.css" rel="stylesheet" type="text/css" />
   </head>
 
 <body>
@@ -66,6 +67,9 @@ speedR requires R packages <a href="http://www.rforge.net/rJava/" target="blank"
 <!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:55%;color:black;background:white;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">library(speedR)
 speedR()
 </pre></div>
+<div class="info">On certain Mac OS X systems (like Snow Leopard), it is impossible to start AWT from rJava started
+from R.app or from the terminal. Since speedR depends on AWT, it will not run. The solution is to
+use R and speedR from within JGR <a href="http://www.rforge.net/JGR" target="blank">http://www.rforge.net/JGR</a>.</div>
 </p>
 
 <h3>Using speedR</h3>
