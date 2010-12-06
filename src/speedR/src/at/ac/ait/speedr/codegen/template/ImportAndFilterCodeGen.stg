@@ -1,0 +1,12 @@
+group ImportAndFilterCodegen;
+
+importandfilter(params) ::= <<
+installed.pkgs = installed.packages()
+required.pkgs = c("rJava","iplots")
+toBeInstalled = required.pkgs[!(required.pkgs %in% installed.pkgs[,1])]
+if (length(toBeInstalled) != 0){
+	install.packages(toBeInstalled)
+}
+
+<params;separator="\n">
+>>

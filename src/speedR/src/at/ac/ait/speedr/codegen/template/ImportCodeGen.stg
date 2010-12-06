@@ -1,0 +1,33 @@
+group ImportCodeGen;
+
+importany(varname,params) ::= <<
+<varname> \<- speedR.importany(<params;separator=",">)
+>>
+
+file(value) ::= "file = \"<value>\""
+
+separator(value) ::= "separator = \"<value>\""
+
+quote(value) ::= "quote = \"<value>\""
+
+rowstart(value) ::= "rowstart = <value>"
+
+rowend(value) ::= "rowend = <value>"
+
+colstart(value) ::= "colstart = <value>"
+
+colend(value) ::= "colend = <value>"
+
+hasRowNames(value) ::= "hasRowNames = <value>"
+
+rowNamesColumnIndex(value) ::= "rowNamesColumnIndex = <value>"
+
+hasColumnNames(value) ::= "hasColumnNames = <value>"
+
+columnNamesRowIndex(value) ::= "columnNamesRowIndex = <value>"
+
+cellUpdates(allCellUpdates)::= <<<allCellUpdates;separator="\n"> >>
+
+cellUpdate(varname,value,rowIndex,columnIndex) ::= "<varname>[<rowIndex>,<columnIndex>]=<value>"
+
+rownameUpdate(varname,value,rowIndex)::="row.names(<varname>)[<rowIndex>] = <value>"

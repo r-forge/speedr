@@ -1,0 +1,44 @@
+group RCodeGen;
+
+filterfunction(functionname,filterlevels) ::= <<
+
+<functionname> \<- function (x) {
+ 	x[
+ 	  <filterlevels; separator="|\n">
+ 	 ,]
+ }
+
+>>
+
+
+filterlevel(selectors) ::= << (<selectors; separator="&">) >>
+
+selector(predicates) ::= "(<predicates>)"
+
+or(p,b) ::= "(<a>) | (<b>)"
+
+and(a,b) ::= "<a> & <b>"
+
+not(a) ::= "! (<a>)"
+
+isna(colIndex) ::= "sapply(x<colIndex>,is.na)"
+
+isnull(colIndex) ::= "sapply(x<colIndex>,is.null)"
+
+notnull(colIndex) ::= "! sapply(x<colIndex>,is.null)"
+
+equal(colIndex,a) ::= "x<colIndex> == <a>"
+
+less(colIndex,a) ::= "x<colIndex> \< <a>"
+
+greater(colIndex,a) ::= "x<colIndex> \> <a>"
+
+lessOrEqual(colIndex,a) ::= "x<colIndex> \<= <a>"
+
+greaterOrEqual(colIndex,a) ::= "x<colIndex> \>= <a>"
+
+contains(colIndex,text) ::= "grepl(<text>,x<colIndex>)"
+
+contains_rownames(rownamesindex,text) ::= "grepl(<text>,<rownamesindex>)"
+
+equal_rownames(rownamesindex,text) ::= "<rownamesindex> == <text>"
