@@ -21,9 +21,10 @@ public class SpeedRInit {
     public static boolean init(Level rootLogLevel) throws IOException, REngineException {
         RConnection.initREngine();
         System.setOut(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
-        System.setErr(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
+        //System.setErr(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
 
         Logger root = Logger.getLogger("");
+
         root.setLevel(rootLogLevel);
         File logdir = new File(System.getProperty("user.home") + "/speedR");
         logdir.mkdir();
@@ -33,6 +34,7 @@ public class SpeedRInit {
         SimpleFormatter formatterTxt = new SimpleFormatter();
         fileTxt.setFormatter(formatterTxt);
         root.addHandler(fileTxt);
+
 
         Logger.getLogger(SpeedRInit.class.getName()).log(Level.INFO, "logfile= {0}", logfile);
 

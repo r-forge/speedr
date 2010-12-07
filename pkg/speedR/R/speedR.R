@@ -60,10 +60,7 @@ speedR <- function(maxmemory = NULL,...){
 		Exception = function(e){
 			e$jobj$printStackTrace()
 		} 
-	) 
-	#.jcall("at/ac/ait/speedr/SpeedRFrame","V",method="main",.jarray(character(0)))
-	
-	# .jcall("rif/firefree/NewMain","V",method="main",.jarray(character(0)) )
+	)
 }
 
 speedR.importany<-function(file=NULL,rowstart=NULL,rowend=NULL,colstart=NULL,colend=NULL,
