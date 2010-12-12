@@ -29,7 +29,7 @@ I.	Definition
 
 II.	Contractual Purpose
 
-1.	The Contractual Purpose of this Agreement is to provide the Software for use for scientific and non-commercial applications in accordance with the R Software of the R Foundation for Statistical Computing. The use of this Software with any other Software or libraries not of R Version is prohibited. 
+1.	The Contractual Purpose of this Agreement is to provide the Software for use and distribution applications in context with the R Software of the R Foundation for Statistical Computing. The use and distribution of this Software with any other Software or libraries not of R Version is prohibited.  
 
 2.	With downloading the Software the licensee accepts the regulation of this Agreement.
 
@@ -41,22 +41,47 @@ III.	Type of License
 2.	Unless otherwise explicitly provided for in this Agreement, the Licensee shall not be entitled to grant licenses or forward the Software or derivates thereof to third parties. Moreover, the Licensee shall not be entitled to assign rights under this Agreement directly or indirectly to third parties without prior written consent of the Licensor.
 
 
-IV.	Commercial License
 
-On request the Licensor will grant a commercial license under fair and reasonable conditions to be specified in a separate document. 
+IV.	Support
 
+The Licensor will neither provide support, adjustment or installation services beyond the support mentioned in IX.1 under this contract. Such services can be acquired under a separate maintenance Agreement. 
 
-V.	Support
-
-The Licensor will neither provide support, adjustment or installation services. Such services can be acquired under a separate maintenance Agreement. 
-
-VI.	Warranty and Limitation of Liability.
+V.	Warranty and Limitation of Liability.
 THERE IS NO WARRANTY FOR THE PROGRAM, TO THE EXTENT PERMITTED BY APPLICABLE LAW. EXCEPT WHEN OTHERWISE STATED IN WRITING THE COPYRIGHT HOLDERS AND/OR OTHER PARTIES PROVIDE THE PROGRAM “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE. THE ENTIRE RISK AS TO THE QUALITY AND PERFORMANCE OF THE PROGRAM IS WITH THE LICENCEE. SHOULD THE PROGRAM PROVE DEFECTIVE, THE LICENSEE ASSUMES THE COST OF ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING WILL AIT, BE LIABLE TO THE LICENSEE FOR DAMAGES, INCLUDING ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY THE LICENSEE OR THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 If the disclaimer of warranty and limitation of liability provided above cannot be given local legal effect according to their terms, reviewing courts shall apply local law that most closely approximates an absolute waiver of all civil liability in connection with the Program, unless a warranty or assumption of liability accompanies a copy of the Program in return for a fee.
 
+VI.	Improvements and Further Developments
 
-VII.	General Terms
+1.	AIT shall endeavour to improve and further develop the Software however, without being obliged to do so.
+
+2.	The Licensee shall not have the right to reverse engineer, modify or further develop the Software.
+
+
+
+
+
+VII.	Secrecy
+
+1.	The Licensee undertake to keep, during the period of validity of this Agreement, all oral and written information, such as company and business secrets, intellectual property rights, know-how, other technical and non-technical information, hereby achieved knowledge and results, written documents, drawings, blueprints, specifications, methods, formulas and programmable logic and software algorithms, acquired due to this Agreement, confidential towards any third party. No such information shall be disclosed, neither in whole nor in part, without prior written consent of AIT, to third parties, licensees or costumers. 
+
+2.	The Parties agree that information disclosed by AIT pursuant to this Agreement which would otherwise be Confidential Information shall not be deemed Confidential Information to the extent that it can be proven by written records that said information:
+
+a.	is known and on record at the Licensee prior to disclosure or;
+b.	is furnished by the third party without similar restrictions to those herein contained as to the use or disclosure thereof or;
+
+3.	If only a portion of the Confidential Information falls under any of the above subsections, then only that portion of the Confidential Information shall be excluded from the use and disclosure restrictions of this Agreement.
+
+
+VIII.	Termination
+
+1.	This Agreement shall enter into force on the date of signing by both Parties and shall stay in force indefinitely.
+
+
+
+
+
+IX.	General Terms
 
 1.	Should any provision of this Agreement prove to be invalid or incapable of fulfilment, or subsequently become invalid or incapable of fulfilment, whether in whole or in part, or should the Parties mutually agree that there is a loophole in the Agreement, this shall not affect the validity of the remaining provisions of this Agreement. In such a case, the invalid or incapable provision shall be replaced or accordingly supplemented by the extent permitted by law, by such provision as most closely reflect the economic a legal intent of the invalid, incapable or missing provision.
 
