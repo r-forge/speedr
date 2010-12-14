@@ -50,14 +50,10 @@ echo $contents; } ?>
 <p>
 speedR depends on Java Runtime Edition 6. To install Java, please go to <a href="http://java.com" target="blank">java.com</a>
 </p>
-<p>
-speedR requires R packages <a href="http://www.rforge.net/rJava/" target="blank">rJava</a> and <a href="http://www.rosuda.org/iplots/" target="blank">iplots</a>. To install these packages, please run this in R:
-<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:55%;color:black;background:white;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">install.packages(c(<span style="color: #a31515">&quot;rJava&quot;</span>,<span style="color: #a31515">&quot;iplots&quot;</span>))</pre></div>
-</p>
 
 <h4>Installation:</h4>
 <p>Please run this code in R to install speedR: 
-<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:55%;color:black;background:white;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">install.packages(<span style="color: #a31515">&quot;speedR&quot;</span>, repos=<span style="color: #a31515">&quot;http://R-Forge.R-project.org&quot;</span>)
+<!-- HTML generated using hilite.me --><div style="background: #ffffff; overflow:auto;width:55%;color:black;background:white;border:solid gray;border-width:.1em .1em .1em .8em;padding:.2em .6em;"><pre style="margin: 0; line-height: 125%">install.packages(<span style="color: #a31515">&quot;speedR&quot;</span>)
 </pre></div>
 
 </p>
