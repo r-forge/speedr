@@ -9,18 +9,17 @@
 speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){		
 		
 	if(!get(".speedRInitialized",.speedR_Env)){
-	
-		if(is.null(maxmemory) && .Platform$OS.type == "windows"){
-			availablememory <- memory.limit() - memory.size()
-			Xmx <- round(availablememory*0.7)
+		jvmparameters = c()
 		
-			jvmparameters = paste("-Xmx",Xmx,"m",sep="");
-			if(debug){
-				jvmparameters = c(jvmparameters,"-agentlib:jdwp=transport=dt_socket,server=y,address=localhost:8001")
-			}			
-			options(java.parameters = jvmparameters)
-		}else if(!is.null(maxmemory)){
-			jvmparameters = paste("-Xmx",maxmemory,"m",sep="");
+		if(debug){
+			jvmparameters = c("-agentlib:jdwp=transport=dt_socket,server=y,address=localhost:8001")
+		}
+		
+		if(!is.null(maxmemory)){
+			jvmparameters = paste("-Xmx",maxmemory,"m",sep="");			
+		}
+		
+		if(length(jvmparameters)>0){
 			options(java.parameters = jvmparameters)
 		}
 		
