@@ -1,7 +1,10 @@
 package at.ac.ait.speedr.codegen;
 
 import at.ac.ait.speedr.codegen.FilterExpressionRCodeGen.rcode_return;
-import at.ac.ait.speedr.table.RColumnIndexModel;
+import at.ac.ait.speedr.table.RPOSIXct;
+import at.ac.ait.speedr.table.model.RAbstractTableModel;
+import at.ac.ait.speedr.table.model.twodim.RDataFrameTableModel;
+import at.ac.arcs.tablefilter.filtermodel.DateFilterDevice;
 import at.ac.arcs.tablefilter.filtermodel.NumericFilterDevice;
 import at.ac.arcs.tablefilter.filtermodel.info.FilterColumnInfo;
 import at.ac.arcs.tablefilter.filtermodel.info.FilterInfo;
@@ -39,8 +42,8 @@ public class FilterFunctionCodeGen {
         }
     }
 
-    public String getFilterFunctionCode(String functionname,FilterInfo filterInfo,
-            boolean hasRowname,RColumnIndexModel columnIndexModel) {
+    public String getFilterFunctionCode(String functionname, FilterInfo filterInfo,
+            boolean hasRowname, RAbstractTableModel tableModel) {
 
         StringTemplate filterfunction = stg.getInstanceOf("filterfunction");
         filterfunction.setAttribute("functionname", functionname);
@@ -52,7 +55,7 @@ public class FilterFunctionCodeGen {
 
             List<FilterColumnInfo> columns = filterRowInfo.getColumns();
             if (columns.isEmpty()) {
-                filterfunction.setAttribute("filterlevels", "(T)");
+                filterfunction.setAttribute("filterlevels", "(TRUE)");
                 continue;
             }
             for (FilterColumnInfo filterColumnInfo : columns) {
@@ -68,8 +71,13 @@ public class FilterFunctionCodeGen {
                     // create a parser that feeds off the tokens buffer
                     FilterExpressionParser parser = new FilterExpressionParser(tokens);
 
+                    lexer.setNumberColumn(filterInfo.getFilterDevices()[filterColumnInfo.getColumn()] instanceof NumericFilterDevice);
+
                     parser.setNumberColumn(
                             filterInfo.getFilterDevices()[filterColumnInfo.getColumn()] instanceof NumericFilterDevice);
+
+                    parser.setDateColumn(
+                            filterInfo.getFilterDevices()[filterColumnInfo.getColumn()] instanceof DateFilterDevice);
 
                     // begin parsing at rule formula
                     formula_return formula = parser.formula();
@@ -83,29 +91,27 @@ public class FilterFunctionCodeGen {
                     nodes.setTokenStream(tokens);
 
                     FilterExpressionRCodeGen rcodegen = new FilterExpressionRCodeGen(nodes);
-                    
-                    
-                    
+
+
+
 
                     int col = filterColumnInfo.getColumn();
                     if (hasRowname && col == 0) {
                         rcodegen.setHasRowNames(hasRowname);
-                        rcodegen.setColumnIndex(columnIndexModel.getRownameIndexCode("x"));
-                    }else{
-                        rcodegen.setColumnIndex(columnIndexModel.getColumnIndexCode(col));
+                        rcodegen.setColumnIndex(tableModel.getRownameIndexCode("x"));
+                    } else {
+                        rcodegen.setColumnIndex(tableModel.getColumnIndexCode(col));
                     }
 
-//                    else if (model.getColumnCount() == 1) {
-//                        rcodegen.setColumnIndex("[1]");
-//                    } else {
-//                        try {
-//                            Integer.parseInt(model.getColumnName(col));
-//                            rcodegen.setColumnIndex("[," + model.getColumnName(col) + "]");
-//                        } catch (NumberFormatException numberFormatException) {
-//                            rcodegen.setColumnIndex("[[\"" + model.getColumnName(col) + "\"]]");
-//                        }
-//                    }
+                    if(tableModel instanceof RDataFrameTableModel){
+                        rcodegen.setDataframe(true);
+                        rcodegen.setDataframeColumnIndex(tableModel.getColumnName(col));
+                    }
 
+                    if(tableModel.getColumnClass(col) == RPOSIXct.class){
+                        rcodegen.setPOSIXct(true);
+                    }
+                    
                     rcodegen.setTemplateLib(stg);
 
                     rcode_return rcode = rcodegen.rcode();

@@ -3,19 +3,17 @@ group RCodeGen;
 filterfunction(functionname,filterlevels) ::= <<
 
 <functionname> \<- function (x) {
- 	x[
- 	  <filterlevels; separator="|\n">
- 	 ,]
+  subset(x,<filterlevels; separator="|\n\t\t  ">)
  }
 
 >>
 
 
-filterlevel(selectors) ::= << (<selectors; separator="&">) >>
+filterlevel(selectors) ::= << <if(rest(selectors))>(<endif><selectors; separator="&"> <if(rest(selectors))>)<endif> >>
 
-selector(predicates) ::= "(<predicates>)"
+selector(predicates) ::= "<if(rest(predicates))>(<endif><predicates> <if(rest(predicates))>)<endif>"
 
-or(p,b) ::= "(<a>) | (<b>)"
+or(p,b) ::= "(<a> | <b>)"
 
 and(a,b) ::= "<a> & <b>"
 
@@ -27,15 +25,20 @@ isnull(colIndex) ::= "sapply(x<colIndex>,is.null)"
 
 notnull(colIndex) ::= "! sapply(x<colIndex>,is.null)"
 
-equal(colIndex,a) ::= "x<colIndex> == <a>"
+equal(colIndex,a,isdataframe) ::= "<if(isdataframe)><colIndex> == <a><else> x<colIndex> == <a><endif>"
 
-less(colIndex,a) ::= "x<colIndex> \< <a>"
+less(colIndex,a,isdataframe) ::= "<if(isdataframe)> <colIndex> \< <a> <else> x<colIndex> \< <a><endif>"
 
-greater(colIndex,a) ::= "x<colIndex> \> <a>"
+greater(colIndex,a,isdataframe) ::= "<if(isdataframe)> <colIndex> \> <a> <else> x<colIndex> \> <a><endif>"
 
-lessOrEqual(colIndex,a) ::= "x<colIndex> \<= <a>"
+lessOrEqual(colIndex,a,isdataframe) ::= "<if(isdataframe)> <colIndex> \<= <a> <else> x<colIndex> \<= <a><endif>"
 
-greaterOrEqual(colIndex,a) ::= "x<colIndex> \>= <a>"
+greaterOrEqual(colIndex,a,isdataframe) ::= "<if(isdataframe)> <colIndex> \>= <a> <else> x<colIndex> \>= <a><endif>"
+
+time(year,month,day,hour,minute,second)::="as.POSIXct(\"<year>-<month>-<day><if(hour)> <hour>:<minute>:<second><endif>\")"
+
+date(year,month,day)::="as.Date(\"<year>-<month>-<day>\")"
+
 
 contains(colIndex,text) ::= "grepl(<text>,x<colIndex>)"
 

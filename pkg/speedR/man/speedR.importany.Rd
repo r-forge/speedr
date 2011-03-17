@@ -7,7 +7,7 @@
 \usage{
   speedR.importany(file=NULL,rowstart=NULL,rowend=NULL,colstart=NULL,colend=NULL,
 						   hasRowNames = FALSE, rowNamesColumnIndex = NULL,hasColumnNames = FALSE, 
-						   columnNamesRowIndex = NULL, separator = NULL, quote = NULL,maxmemory = NULL, ...)
+						   columnNamesRowIndex = NULL, separator = NULL, quote = NULL,colClasses = NULL,maxmemory = NULL, ...)
 }
 
 \arguments{
@@ -22,6 +22,8 @@
   \item{columnNamesRowIndex}{the index of the row containing the column names. Has an effect only if the hasColumnNames is TRUE}
   \item{separator}{the field separator character.}
   \item{quote}{the set of quoting characters.}
+  \item{colClasses}{A vector of classes to be assumed for the columns. Possible classes are numeric,character,factor,Date[=format],POSIXct[=format].
+					The Date and POSIXct formats can be added but optional. I.e. ``Date=\%d.\%m.\%Y" or ``POSIXct=\%Y-\%m-\%d \%H:\%M".}
   \item{maxmemory}{the maximum allocatable memory in Mb. If speedR is already once started, 
 				   calling speedR with a different value will have no effect. To change the memory, 
 				   R must be restarted and speedR has to be called with the new value.}
@@ -44,5 +46,6 @@
   temp <- speedR.importany(file = "C:/decodersizes.txt",separator = "\t")
   temp <- speedR.importany(file = "C:/decodersizes.txt",separator = ",",quote = "'")
   temp <- speedR.importany(file = "C:/decodersizes.txt",separator = "\t",quote = "\"",rowstart = 3,rowend = 18313,colstart = 3,colend = 23,hasRowNames = TRUE,rowNamesColumnIndex = 2,hasColumnNames = TRUE,columnNamesRowIndex = 2)
+  temp <- speedR.importany(file = "F:/date.txt",colClasses=c("numeric","factor","Date=%d.%m.%Y"))
   }
 }

@@ -2,8 +2,10 @@ package at.ac.ait.speedr.codegen;
 
 import at.ac.ait.speedr.codegen.FilterExpressionRCodeGen.rcode_return;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanelUserActionListener;
+import at.ac.ait.speedr.table.RPOSIXct;
 import at.ac.arcs.tablefilter.events.FilterEvent;
 import at.ac.arcs.tablefilter.events.FilterListener;
+import at.ac.arcs.tablefilter.filtermodel.DateFilterDevice;
 import at.ac.arcs.tablefilter.filtermodel.NumericFilterDevice;
 import at.ac.arcs.tablefilter.filtermodel.info.FilterColumnInfo;
 import at.ac.arcs.tablefilter.filtermodel.info.FilterInfo;
@@ -40,19 +42,20 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     private static StringTemplateGroup import_stg;
     private static StringTemplateGroup importandfilter_stg;
     private EventListenerList listenerList = new EventListenerList();
-    private StringTemplate importanyfunction;
-    private StringTemplate file;
-    private StringTemplate delimiter;
-    private StringTemplate textqualifier;
-    private StringTemplate rowstart;
-    private StringTemplate rowend;
-    private StringTemplate colstart;
-    private StringTemplate colend;
+    private ChangeEvent changeEvent;
+    private StringTemplate importanyfunctionST;
+    private StringTemplate fileST;
+    private StringTemplate delimiterST;
+    private StringTemplate textqualifierST;
+    private StringTemplate rowstartST;
+    private StringTemplate rowendST;
+    private StringTemplate colstartST;
+    private StringTemplate colendST;
     private StringTemplate hasRowNamesST;
     private StringTemplate rowNamesColumnIndexST;
-    private StringTemplate hasColumnNames;
-    private StringTemplate columnNamesRowIndex;
-    private ChangeEvent changeEvent;
+    private StringTemplate hasColumnNamesST;
+    private StringTemplate columnNamesRowIndexST;
+    private StringTemplate colClassesST;
     private String variablename = "temp";
     private String filterFunctionName = "temp_filter";
     private TableModel model;
@@ -64,6 +67,7 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     private int rowendIndex = 0;
     private int colstartIndex = 1;
     private int colendIndex = 0;
+    private String[] colClasses;
     private HashMap<Integer, HashMap<Integer, Object>> cellUpdates =
             new HashMap<Integer, HashMap<Integer, Object>>();
 
@@ -95,53 +99,56 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     }
 
     private void setFiltercode() {
-        importanyfunction = import_stg.getInstanceOf("importany");
-        importanyfunction.setAttribute("varname", variablename);
+        importanyfunctionST = import_stg.getInstanceOf("importany");
+        importanyfunctionST.setAttribute("varname", variablename);
 
-        if (file != null) {
-            importanyfunction.setAttribute("params", file);
+        if (fileST != null) {
+            importanyfunctionST.setAttribute("params", fileST);
         }
-        if (delimiter != null) {
-            importanyfunction.setAttribute("params", delimiter);
+        if (delimiterST != null) {
+            importanyfunctionST.setAttribute("params", delimiterST);
         }
-        if (textqualifier != null) {
-            importanyfunction.setAttribute("params", textqualifier);
+        if (textqualifierST != null) {
+            importanyfunctionST.setAttribute("params", textqualifierST);
         }
-        if (rowstart != null) {
-            importanyfunction.setAttribute("params", rowstart);
+        if (rowstartST != null) {
+            importanyfunctionST.setAttribute("params", rowstartST);
         }
-        if (rowend != null) {
-            importanyfunction.setAttribute("params", rowend);
+        if (rowendST != null) {
+            importanyfunctionST.setAttribute("params", rowendST);
         }
-        if (colstart != null) {
-            importanyfunction.setAttribute("params", colstart);
+        if (colstartST != null) {
+            importanyfunctionST.setAttribute("params", colstartST);
         }
-        if (colend != null) {
-            importanyfunction.setAttribute("params", colend);
+        if (colendST != null) {
+            importanyfunctionST.setAttribute("params", colendST);
         }
         if (hasRowNamesST != null) {
-            importanyfunction.setAttribute("params", hasRowNamesST);
+            importanyfunctionST.setAttribute("params", hasRowNamesST);
         }
         if (rowNamesColumnIndexST != null) {
-            importanyfunction.setAttribute("params", rowNamesColumnIndexST);
+            importanyfunctionST.setAttribute("params", rowNamesColumnIndexST);
         }
-        if (hasColumnNames != null) {
-            importanyfunction.setAttribute("params", hasColumnNames);
+        if (hasColumnNamesST != null) {
+            importanyfunctionST.setAttribute("params", hasColumnNamesST);
         }
-        if (columnNamesRowIndex != null) {
-            importanyfunction.setAttribute("params", columnNamesRowIndex);
+        if (columnNamesRowIndexST != null) {
+            importanyfunctionST.setAttribute("params", columnNamesRowIndexST);
+        }
+        if (colClassesST != null) {
+            importanyfunctionST.setAttribute("params", colClassesST);
         }
 
-        importcode = importanyfunction.toString();
+        importcode = importanyfunctionST.toString();
     }
 
     public String getImportAndFilterCode() {
         setFiltercode();
         StringTemplate t = importandfilter_stg.getInstanceOf("importandfilter");
         t.setAttribute("params", importcode);
-        StringTemplate cellUpdates = generateCellUpdates();
-        if (cellUpdates != null) {
-            t.setAttribute("params", cellUpdates);
+        StringTemplate _cellUpdates = generateCellUpdates();
+        if (_cellUpdates != null) {
+            t.setAttribute("params", _cellUpdates);
         }
         t.setAttribute("params", filtercode);
         if (filtercode != null && !filtercode.equals("")) {
@@ -162,7 +169,7 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
 
             List<FilterColumnInfo> columns = filterRowInfo.getColumns();
             if (columns.isEmpty()) {
-                filterfunction.setAttribute("filterlevels", "(T)");
+                filterfunction.setAttribute("filterlevels", "(TRUE)");
                 continue;
             }
             for (FilterColumnInfo filterColumnInfo : columns) {
@@ -178,8 +185,13 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
                     // create a parser that feeds off the tokens buffer
                     FilterExpressionParser parser = new FilterExpressionParser(tokens);
 
+                    lexer.setNumberColumn(filterInfo.getFilterDevices()[filterColumnInfo.getColumn()] instanceof NumericFilterDevice);
+
                     parser.setNumberColumn(
                             filterInfo.getFilterDevices()[filterColumnInfo.getColumn()] instanceof NumericFilterDevice);
+
+                    parser.setDateColumn(
+                            filterInfo.getFilterDevices()[filterColumnInfo.getColumn()] instanceof DateFilterDevice);
 
                     // begin parsing at rule formula
                     formula_return formula = parser.formula();
@@ -194,21 +206,34 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
 
                     FilterExpressionRCodeGen rcodegen = new FilterExpressionRCodeGen(nodes);
 
-                    if (model.getColumnName(0).equals("row.names")) {
-                        rcodegen.setHasRowNames(true);
-                    }
+//                    if (model.getColumnName(0).equals("row.names")) {
+//                        rcodegen.setHasRowNames(true);
+//                    }
+//
+//                    int col = filterColumnInfo.getColumn();
+//                    if (rcodegen.hasRowNames() && col == 0) {
+//                        rcodegen.setColumnIndex(null);
+//                    } else if (model.getColumnCount() == 1) {
+//                        rcodegen.setColumnIndex("[1]");
+//                    } else {
+//                        try {
+//                            Integer.parseInt(model.getColumnName(col));
+//                            rcodegen.setColumnIndex("[," + model.getColumnName(col) + "]");
+//                        } catch (NumberFormatException numberFormatException) {
+//                            rcodegen.setColumnIndex("[[\"" + model.getColumnName(col) + "\"]]");
+//                        }
+//                    }
 
                     int col = filterColumnInfo.getColumn();
-                    if (rcodegen.hasRowNames() && col == 0) {
-                        rcodegen.setColumnIndex(null);
-                    } else if (model.getColumnCount() == 1) {
-                        rcodegen.setColumnIndex("[1]");
+                    if (col == 0 && model.getColumnName(0).equals("row.names")) {
+                        rcodegen.setHasRowNames(true);
+                        rcodegen.setColumnIndex("rownames(x)");
                     } else {
-                        try {
-                            Integer.parseInt(model.getColumnName(col));
-                            rcodegen.setColumnIndex("[," + model.getColumnName(col) + "]");
-                        } catch (NumberFormatException numberFormatException) {
-                            rcodegen.setColumnIndex("[[\"" + model.getColumnName(col) + "\"]]");
+//                        rcodegen.setColumnIndex(tableModel.getColumnIndexCode(col));
+                        rcodegen.setDataframe(true);
+                        rcodegen.setDataframeColumnIndex(model.getColumnName(col));
+                        if (model.getColumnClass(col) == RPOSIXct.class) {
+                            rcodegen.setPOSIXct(true);
                         }
                     }
 
@@ -237,66 +262,66 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     }
 
     public void setFile(String path) {
-        file = import_stg.getInstanceOf("file");
-        file.setAttribute("value", path);
+        fileST = import_stg.getInstanceOf("file");
+        fileST.setAttribute("value", path);
     }
 
     public void separatorChanged(String newvalue) {
-        this.delimiter = import_stg.getInstanceOf("separator");
-        this.delimiter.setAttribute("value", newvalue);
+        this.delimiterST = import_stg.getInstanceOf("separator");
+        this.delimiterST.setAttribute("value", newvalue);
         fireStateChanged();
     }
 
     public void quoteChanged(String newvalue) {
         if (newvalue == null) {
-            textqualifier = null;
+            textqualifierST = null;
         } else {
-            textqualifier = import_stg.getInstanceOf("quote");
-            textqualifier.setAttribute("value", newvalue);
+            textqualifierST = import_stg.getInstanceOf("quote");
+            textqualifierST.setAttribute("value", newvalue);
             fireStateChanged();
         }
     }
 
     public void rowStartChanged(int newvalue) {
         rowstartIndex = newvalue;
-        this.rowstart = import_stg.getInstanceOf("rowstart");
-        this.rowstart.setAttribute("value", newvalue);
+        this.rowstartST = import_stg.getInstanceOf("rowstart");
+        this.rowstartST.setAttribute("value", newvalue);
         fireStateChanged();
     }
 
     public void rowEndChange(int newvalue) {
         rowendIndex = newvalue;
-        this.rowend = import_stg.getInstanceOf("rowend");
-        this.rowend.setAttribute("value", newvalue);
+        this.rowendST = import_stg.getInstanceOf("rowend");
+        this.rowendST.setAttribute("value", newvalue);
         fireStateChanged();
     }
 
     public void colStartChanged(int newvalue) {
         colstartIndex = newvalue;
-        this.colstart = import_stg.getInstanceOf("colstart");
-        this.colstart.setAttribute("value", newvalue);
+        this.colstartST = import_stg.getInstanceOf("colstart");
+        this.colstartST.setAttribute("value", newvalue);
         fireStateChanged();
     }
 
     public void colEndChange(int newvalue) {
         colendIndex = newvalue;
-        this.colend = import_stg.getInstanceOf("colend");
-        this.colend.setAttribute("value", newvalue);
+        this.colendST = import_stg.getInstanceOf("colend");
+        this.colendST.setAttribute("value", newvalue);
         fireStateChanged();
     }
 
     public void hasRowHeaderChanged(Boolean newvalue) {
-        this.hasColumnNames = import_stg.getInstanceOf("hasColumnNames");
-        this.hasColumnNames.setAttribute("value", newvalue.toString().toUpperCase());
+        this.hasColumnNamesST = import_stg.getInstanceOf("hasColumnNames");
+        this.hasColumnNamesST.setAttribute("value", newvalue.toString().toUpperCase());
         fireStateChanged();
     }
 
     public void columnNamesRowIndexChanged(int newvalue) {
-        this.columnNamesRowIndex = import_stg.getInstanceOf("columnNamesRowIndex");
+        this.columnNamesRowIndexST = import_stg.getInstanceOf("columnNamesRowIndex");
         if (logger.isLoggable(Level.INFO)) {
             logger.log(Level.INFO, "new columnNamesRowIndex = {0}", newvalue);
         }
-        this.columnNamesRowIndex.setAttribute("value", newvalue);
+        this.columnNamesRowIndexST.setAttribute("value", newvalue);
         fireStateChanged();
     }
 
@@ -339,6 +364,13 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
             cellUpdates.put(realRowIndex, new HashMap<Integer, Object>());
         }
         cellUpdates.get(realRowIndex).put(realColumnIndex, aValue);
+        fireStateChanged();
+    }
+
+    public void colClassesChanged(String[] classes) {
+        colClasses = classes;
+        colClassesST = import_stg.getInstanceOf("colClasses");
+        colClassesST.setAttribute("classes", colClasses);
         fireStateChanged();
     }
 
@@ -400,9 +432,9 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     }
 
     private boolean isColumnInTheRange(int columnIndex) {
-        if(hasRowNames && columnIndex == rowNamesColumnIndex){
+        if (hasRowNames && columnIndex == rowNamesColumnIndex) {
             return true;
-        }else if (hasRowNames) {
+        } else if (hasRowNames) {
 
             if (columnIndex < rowNamesColumnIndex) {
                 return (columnIndex >= colstartIndex)

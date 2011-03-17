@@ -1,7 +1,6 @@
 package at.ac.ait.speedr.table.model.twodim;
 
-import at.ac.ait.speedr.table.RColumnIndexModel;
-import javax.swing.table.AbstractTableModel;
+import at.ac.ait.speedr.table.model.RAbstractTableModel;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPMismatchException;
@@ -11,7 +10,7 @@ import org.rosuda.REngine.RList;
  * TableModel for R matrix objects
  * @author visnei
  */
-public class RDoubleMatrixTableModel extends AbstractTableModel implements RColumnIndexModel{
+public class RDoubleMatrixTableModel extends RAbstractTableModel {
 
     private int nrow;
     private int ncol;
@@ -85,19 +84,23 @@ public class RDoubleMatrixTableModel extends AbstractTableModel implements RColu
         } else if (rownames != null) {
             columnIndex -= 1;
         }
-        return doubleMatrix[rowIndex][columnIndex];
-
+        if (REXPDouble.isNA(doubleMatrix[rowIndex][columnIndex])) {
+            return null;
+        } else {
+            return doubleMatrix[rowIndex][columnIndex];
+        }
     }
 
     public String getColumnIndexCode(int columnIndex) {
-        if(getColumnName(columnIndex).matches("\\d+")){
-            return "[,"+getColumnName(columnIndex)+"]";
-        }else{
-           return "[,\""+getColumnName(columnIndex)+"\"]";
+        if (getColumnName(columnIndex).matches("\\d+")) {
+            return "[," + getColumnName(columnIndex) + "]";
+        } else {
+            return "[,\"" + getColumnName(columnIndex) + "\"]";
         }
     }
 
     public String getRownameIndexCode(String var) {
-        return "dimnames("+var+")[[1]]";
+        return "dimnames(" + var + ")[[1]]";
     }
+
 }

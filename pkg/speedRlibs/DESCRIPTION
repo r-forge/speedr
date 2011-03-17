@@ -1,5 +1,5 @@
 Package:	speedRlibs
-Version:	1.0-19
+Version:	1.1-22
 Date:	2010-11-30
 Title:	Package containing the required libraries (jars) for speedR
 Author:	Ilhami Visne
@@ -8,4 +8,3 @@ Description:	speedRlibs is a container for the required libraries (jars) by spee
 				These libraries are packaged separately, because it is approximately 17 MB and will not be so often updated like speedR.
 				Thus it reduces the download time after the first installation.
 License:	LGPL (>= 2.1)
-ZipData:	yes

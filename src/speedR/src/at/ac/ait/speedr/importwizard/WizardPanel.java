@@ -110,7 +110,7 @@ public class WizardPanel extends javax.swing.JPanel {
      *
      * @return the dataframe
      */
-    public REXPGenericVector getDataframe2() {
+    public REXPGenericVector getDataframe() {
         return dataframe;
     }
 

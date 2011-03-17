@@ -31,3 +31,5 @@ cellUpdates(allCellUpdates)::= <<<allCellUpdates;separator="\n"> >>
 cellUpdate(varname,value,rowIndex,columnIndex) ::= "<varname>[<rowIndex>,<columnIndex>]=<value>"
 
 rownameUpdate(varname,value,rowIndex)::="row.names(<varname>)[<rowIndex>] = <value>"
+
+colClasses(classes) ::= <<colClasses=c("<classes;separator="\",\"">")>>

@@ -21,7 +21,7 @@ public class SpeedRInit {
     public static boolean init(Level rootLogLevel) throws IOException, REngineException {
         RConnection.initREngine();
         System.setOut(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
-        //System.setErr(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
+        System.setErr(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
 
         Logger root = Logger.getLogger("");
 

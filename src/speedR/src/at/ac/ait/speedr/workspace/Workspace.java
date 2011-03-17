@@ -17,7 +17,7 @@ public class Workspace {
     private DefaultMutableTreeNode root;
 
     public Workspace() {
-        root = new DefaultMutableTreeNode("Data Objects");
+        root = new DefaultMutableTreeNode("Objects");
         workspace = new DefaultTreeModel(root);
     }
 
@@ -52,7 +52,7 @@ public class Workspace {
 
         for (int i = 0; i < var_name.length; i++) {
             robj = new RObject(parent, var_name[i], var_cls[i]);
-            if (robj.getType().equals("list")) {
+            if (robj.getType().equals("list")||robj.getType().equals("data.frame")) {
                 DefaultMutableTreeNode listNode = new DefaultMutableTreeNode(robj, true);
                 listNode.add(new DefaultMutableTreeNode("dummy"));
                 node.add(listNode);
@@ -88,5 +88,18 @@ public class Workspace {
             }
         }
         return false;
+    }
+
+    public String getSummaryToolTip(RObject robject) throws REngineException, REXPMismatchException{
+        REXP exp = RConnection.eval("capture.output(summary(" + robject.getName() + "))");
+        String[] output = exp.asStrings();
+        StringBuilder sum = new StringBuilder();
+        sum.append("<html><pre>");
+        for(String out:output){
+            sum.append(out).append("<br>");
+        }
+        sum.delete(sum.length()-4,sum.length());
+        sum.append("</pre></html>");
+        return sum.toString();
     }
 }

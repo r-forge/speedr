@@ -1,9 +1,12 @@
 package at.ac.ait.speedr.importany;
 
+import at.ac.ait.speedr.importwizard.steps.DataImportPanel;
+import at.ac.ait.speedr.importwizard.steps.DataImportPanel.ColumnType;
 import at.ac.ait.speedr.importwizard.steps.ImportTableModel;
 import at.ac.ait.speedr.workspace.RConnection;
 import at.ac.ait.speedr.workspace.RUtil;
 import at.ac.arcs.tablefilter.ARCTable;
+import at.ac.arcs.tablefilter.ist.ColumnSelectorOption;
 import au.com.bytecode.opencsv.CSVReader;
 import com.pensioenpage.jynx.ods2csv.ConversionException;
 import com.pensioenpage.jynx.ods2csv.Converter;
@@ -17,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,8 +32,6 @@ import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xssf.eventusermodel.XLSX2CSV;
 import org.rosuda.REngine.REXPGenericVector;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
 import org.xml.sax.SAXException;
 
 /**
@@ -42,7 +44,7 @@ public class ImporterAnyFunction {
 
     public static void importany(String file, Integer rowstart, Integer rowend, Integer colstart, Integer colend,
             Boolean hasRowNames, Integer rowNamesColumnIndex, Boolean hasColumnNames,
-            Integer columnNamesRowIndex, String separator, String quote) throws IOException {
+            Integer columnNamesRowIndex, String separator, String quote, String[] columnClasses) throws Exception {
 
         String fileExtension;
 
@@ -69,7 +71,7 @@ public class ImporterAnyFunction {
                         quote == null || quote.equals("") ? '\0' : quote.charAt(0));
             }
         } catch (OutOfMemoryError err) {
-            logger.log(Level.SEVERE,"Out of free memory available to speedR reached! Please see speedR() maxmemory parameter to increase it.");
+            logger.log(Level.SEVERE, "Out of free memory available to speedR reached! Please see speedR() maxmemory parameter to increase it.");
             return;
         }
 
@@ -111,16 +113,63 @@ public class ImporterAnyFunction {
         logger.log(Level.INFO, "model column count: {0}", model.getColumnCount());
         logger.log(Level.INFO, "model row count: {0}", model.getRowCount());
 
-        ARCTable t = new ARCTable();
-        t.setModel(model);
-        REXPGenericVector df = RUtil.createRDataFrame(t);
-        try {
-            RConnection.exportDataFrame("speedrtemp", df);
-        } catch (REngineException ex) {
-            Logger.getLogger(ImporterAnyFunction.class.getName()).log(Level.SEVERE, null, ex);
-        } catch (REXPMismatchException ex) {
-            Logger.getLogger(ImporterAnyFunction.class.getName()).log(Level.SEVERE, null, ex);
+        ARCTable table = new ARCTable();
+        table.setNoneOptionId("");
+
+        ColumnSelectorOption[] ops = new ColumnSelectorOption[5];
+        ColumnSelectorOption<ColumnType> op = new ColumnSelectorOption<ColumnType>(ColumnType.NUMERIC, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[0] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.CHARACTER, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[1] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.FACTOR, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[2] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.DATE, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[3] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.POSIXCT, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[4] = op;
+
+        table.setColumnSelectorOptions(ops);
+
+        table.setModel(model);
+        int i = 0;
+        if (model.hasRowNames()) {
+            i = 1;
         }
+
+        for (int j = 0; i < model.getColumnCount(); i++, j++) {
+            if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.NUMERIC.toString())) {
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.NUMERIC.toString(), i);
+                model.convertToNumeric(i);
+            } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.CHARACTER.toString())) {
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER.toString(), i);
+                model.convertToText(i);
+            } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.FACTOR.toString())) {
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.FACTOR.toString(), i);
+                model.convertToText(i);
+            } else if (columnClasses[j].contains(DataImportPanel.ColumnType.DATE.toString())) {
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.DATE.toString(), i);
+                if (columnClasses[j].contains("=")) {
+                    model.convertToDate(i,
+                            new String[]{RUtil.convertPatternFromRFormat(
+                                columnClasses[j].substring(columnClasses[j].indexOf('=') + 1))});
+                } else {
+                    model.convertToDate(i, RUtil.parseDatePattern);
+                }
+            } else if (columnClasses[j].contains(DataImportPanel.ColumnType.POSIXCT.toString())) {
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.POSIXCT.toString(), i);
+
+                if (columnClasses[j].contains("=")) {
+                    model.convertToPOSIXct(i,
+                            new String[]{RUtil.convertPatternFromRFormat(
+                                columnClasses[j].substring(columnClasses[j].indexOf('=') + 1))});
+                } else {
+                    model.convertToPOSIXct(i, RUtil.parsePOSIXctPattern);
+                }
+            }
+        }
+
+        REXPGenericVector df = RUtil.createRDataFrame(table);
+        RConnection.exportDataFrame(".speedrtemp", df);
     }
 
     private static ImportTableModel readXLSX(final File file, char separator, char quote) throws IOException {

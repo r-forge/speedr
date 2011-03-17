@@ -6,12 +6,29 @@
  */
 package at.ac.ait.speedr.importwizard.steps;
 
+import at.ac.ait.speedr.table.POSIXctCellRenderer;
+import at.ac.ait.speedr.table.RDate;
+import at.ac.ait.speedr.table.RDateTimeConverter;
+import at.ac.ait.speedr.table.RPOSIXct;
 import at.ac.ait.speedr.table.RTableCellEditor;
 import at.ac.ait.speedr.table.RTableCellRenderer;
+import at.ac.ait.speedr.workspace.RUtil;
 import at.ac.arcs.tablefilter.ARCTable;
+import at.ac.arcs.tablefilter.cell.DateCellRenderer;
+import at.ac.arcs.tablefilter.events.ColumnSelectorEvent;
+import at.ac.arcs.tablefilter.events.ColumnSelectorListener;
+import at.ac.arcs.tablefilter.events.ColumnSelectorVetoException;
 import at.ac.arcs.tablefilter.events.FilterListener;
+import at.ac.arcs.tablefilter.filtermodel.DateFilterDevice;
+import at.ac.arcs.tablefilter.ist.ColumnSelectorOption;
+import java.awt.HeadlessException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -31,6 +48,8 @@ public class DataImportPanel extends javax.swing.JPanel {
     public static final String PROP_QUALIFIER = "QUALIFIER";
     public static final String PROP_VARIABLENAME = "VARIABLENAME";
     private ImportTableModel tableModel = new ImportTableModel();
+
+    private final TableModelPropertyChangeListener tableModelPropertyChangeListener = new TableModelPropertyChangeListener();
     private DataImportPanelUserActionListener useractionlistener = new DummyUserActionListener();
     private TableModelListener cellUpdateListener = new TableModelListener() {
 
@@ -45,22 +64,199 @@ public class DataImportPanel extends javax.swing.JPanel {
             }
         }
     };
+    
     private boolean updateEnds = true;
+
+    public static enum ColumnType {
+
+        NUMERIC("Numeric"), CHARACTER("Character"), FACTOR("Factor"), DATE("Date"), POSIXCT("POSIXct");
+        private String displayname;
+
+        private ColumnType(String displayname) {
+            this.displayname = displayname;
+        }
+
+        @Override
+        public String toString() {
+            return displayname;
+        }
+    };
+
+    ColumnSelectorListener<ColumnType> columnDataTypeListener = new ColumnSelectorListener<ColumnType>() {
+
+        private String[] colClasses;
+
+        public void columnSelectionChanged(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
+            table.removeColumnSelectorListener(this);
+            try {
+                if (evt.getColumn() == -1) {
+                    if (tableModel.getColumnCount() > 0) {
+                        if (colClasses == null || colClasses.length != tableModel.getColumnCount()) {
+                            colClasses = new String[tableModel.getColumnCount()];
+                        }
+                        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                            if (tableModel.getColumnClass(i) == Double.class) {
+                                table.setColumnSelectorOption(ColumnType.NUMERIC.toString(), i);
+                                colClasses[i] = ColumnType.NUMERIC.toString().toLowerCase();
+                            } else if (tableModel.getColumnClass(i) == String.class) {
+                                table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), i);
+                                colClasses[i] = ColumnType.CHARACTER.toString().toLowerCase();
+                            } else if (tableModel.getColumnClass(i) == RDate.class) {
+                                table.setColumnSelectorOption(ColumnType.DATE.toString(), i);
+                                colClasses[i] = ColumnType.DATE.toString();
+                            } else if (tableModel.getColumnClass(i) == RPOSIXct.class) {
+                                table.setColumnSelectorOption(ColumnType.POSIXCT.toString(), i);
+                                colClasses[i] = ColumnType.POSIXCT.toString();
+                            }
+                        }
+
+                        if (tableModel.hasRowNames() && table.isColumnSelectorEnabled(0)) {
+                            tableModel.convertToText(0);
+                            table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), 0);
+                            table.setColumnSelectorEnabled(0, false);
+                        }
+                    }
+                } else if (evt.getNewValue().getObject() == ColumnType.CHARACTER) {
+                    tableModel.convertToText(evt.getColumn());
+                    colClasses[evt.getColumn()] = ColumnType.CHARACTER.toString().toLowerCase();
+                    callColClassesChanged();
+                } else if (evt.getNewValue().getObject() == ColumnType.FACTOR) {
+                    tableModel.convertToText(evt.getColumn());
+                    colClasses[evt.getColumn()] = ColumnType.FACTOR.toString().toLowerCase();
+                    callColClassesChanged();
+                } else if (evt.getNewValue().getObject() == ColumnType.NUMERIC) {
+                    convertToNumeric(evt);
+                } else if (evt.getNewValue().getObject() == ColumnType.DATE) {
+                    convertToDate(evt);
+                } else if (evt.getNewValue().getObject() == ColumnType.POSIXCT) {
+                    convertToPOSIXct(evt);
+                }
+            } finally {
+                table.addColumnSelectorListener(this);
+            }
+        }
+
+        private void convertToNumeric(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException, HeadlessException {
+            try {
+                tableModel.convertToNumeric(evt.getColumn());
+                colClasses[evt.getColumn()] = ColumnType.NUMERIC.toString().toLowerCase();
+                callColClassesChanged();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(DataImportPanel.this, ex.getMessage());
+                throw new ColumnSelectorVetoException(ex);
+            }
+        }
+
+        private void convertToDate(ColumnSelectorEvent<ColumnType> evt) throws HeadlessException, ColumnSelectorVetoException {
+            try {
+                tableModel.convertToDate(evt.getColumn(), RUtil.parseDatePattern);
+                colClasses[evt.getColumn()] = ColumnType.DATE.toString();
+                callColClassesChanged();
+            } catch (Exception ex) {
+                StringBuilder errmsg = new StringBuilder("Could not parse to Date using the following formats:\n");
+
+                for(String rformat:RUtil.parseDatePatternInRFormat){
+                    errmsg.append(rformat).append('\n');
+                }
+
+                errmsg.append(ex.getMessage()).append("\n Would you like to set the Date pattern below (system default proposed) and try again?");
+                
+                String pattern = (String) JOptionPane.showInputDialog(
+                        DataImportPanel.this,
+                        errmsg,
+                        "Date Format",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        RUtil.defaultDatePatternInRFormat);
+                //If a string was returned, say so.
+                if ((pattern != null) && (pattern.length() > 0)) {
+                    try {
+                        tableModel.convertToDate(evt.getColumn(), new String[]{RUtil.convertPatternFromRFormat(pattern)});
+                        colClasses[evt.getColumn()] = ColumnType.DATE.toString()+"="+pattern;
+                        callColClassesChanged();
+                    } catch (Exception ex1) {
+                        errmsg = new StringBuilder("Could not parse to Date using the following format:\n").append(pattern);
+                        errmsg.append(ex1.getMessage());
+                        JOptionPane.showMessageDialog(DataImportPanel.this, errmsg);
+                        throw new ColumnSelectorVetoException(ex1);
+                    }
+                } else {
+                    throw new ColumnSelectorVetoException(ex);
+                }
+            }
+        }
+
+        private void convertToPOSIXct(ColumnSelectorEvent<ColumnType> evt) throws HeadlessException, ColumnSelectorVetoException {
+            try {
+                tableModel.convertToPOSIXct(evt.getColumn(), RUtil.parsePOSIXctPattern);
+                colClasses[evt.getColumn()] = ColumnType.POSIXCT.toString();
+                callColClassesChanged();
+            } catch (Exception ex) {
+                StringBuilder errmsg = new StringBuilder("Could not parse to POSIXct using the following formats:\n");
+
+                for(String rformat:RUtil.parsePOSIXctPatternInRFormat){
+                    errmsg.append(rformat).append('\n');
+                }
+
+                errmsg.append(ex.getMessage()).append("\n Would you like to set the Date pattern below (system default proposed) and try again?");
+
+                String pattern = (String) JOptionPane.showInputDialog(
+                        DataImportPanel.this,
+                        errmsg,
+                        "POSIXct Format",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        RUtil.defaultPOSIXctPatternInRFormat);
+                //If a string was returned, say so.
+                if ((pattern != null) && (pattern.length() > 0)) {
+                    try {
+                        tableModel.convertToPOSIXct(evt.getColumn(), new String[]{RUtil.convertPatternFromRFormat(pattern)});
+                        colClasses[evt.getColumn()] = ColumnType.POSIXCT.toString()+"="+pattern;
+                        callColClassesChanged();
+                    } catch (Exception ex1) {
+                        errmsg = new StringBuilder("Could not parse to POSIXct using the following format:\n")
+                                .append(pattern).append('\n').append(ex1.getMessage());
+                        
+                        JOptionPane.showMessageDialog(DataImportPanel.this, errmsg);
+                        throw new ColumnSelectorVetoException(ex1);
+                    }
+                } else {
+                    throw new ColumnSelectorVetoException(ex);
+                }
+            }
+        }
+
+        private void callColClassesChanged() {
+            if (tableModel.hasRowNames()) {
+                useractionlistener.colClassesChanged(Arrays.copyOfRange(colClasses, 1, colClasses.length));
+            } else {
+                useractionlistener.colClassesChanged(colClasses);
+            }
+        }
+    };
 
     /** Creates new form DataImportPanel */
     public DataImportPanel(boolean showConfigurationPanel) {
         super();
         initComponents();
-        configurationPanel.setVisible(showConfigurationPanel);
-        tableModel.addPropertyChangeListener(new TableModelPropertyChangeListener());
-        tableModel.addTableModelListener(cellUpdateListener);
+        initTable();
 
+        configurationPanel.setVisible(showConfigurationPanel);
+        tableModel.addPropertyChangeListener(tableModelPropertyChangeListener);
+        tableModel.addTableModelListener(cellUpdateListener);
+    }
+
+    private void initTable() {
         RTableCellRenderer cr = new RTableCellRenderer(table.getDefaultRenderer(Object.class));
 
         table.setDefaultRenderer(Object.class, cr);
         table.setDefaultRenderer(Integer.class, cr);
         table.setDefaultRenderer(Double.class, cr);
         table.setDefaultRenderer(String.class, cr);
+        table.setDefaultRenderer(RDate.class, new DateCellRenderer());
+        table.setDefaultRenderer(RPOSIXct.class, new POSIXctCellRenderer());
 
         RTableCellEditor editor = new RTableCellEditor(table.getDefaultEditor(Object.class));
 
@@ -68,11 +264,36 @@ public class DataImportPanel extends javax.swing.JPanel {
         table.setDefaultEditor(Integer.class, editor);
         table.setDefaultEditor(Double.class, editor);
         table.setDefaultEditor(String.class, editor);
+        table.setDefaultEditor(RDate.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
+        table.setDefaultEditor(RPOSIXct.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
+
+        table.registerFilterDevice(RDate.class, new DateFilterDevice());
+        table.registerFilterDevice(RPOSIXct.class, new DateFilterDevice());
+        table.registerConverter(RDate.class, new RDateTimeConverter());
+        table.registerConverter(RPOSIXct.class, new RDateTimeConverter());
 
         table.setFilterRowHeaderVisibleColumnsMask(ARCTable.FRH_SHOW_COUNT_MASK
                 | ARCTable.FRH_COLOR_MASK);
         table.setTableRowHeaderVisibleColumnsMask(ARCTable.TRH_MODEL_INDEX_MASK);
         table.setGroupingEnabled(false);
+        table.setColumnSelectorVisible(true);
+
+        table.setNoneOptionId("");
+        ColumnSelectorOption[] ops = new ColumnSelectorOption[5];
+        ColumnSelectorOption<ColumnType> op = new ColumnSelectorOption<ColumnType>(ColumnType.NUMERIC, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[0] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.CHARACTER, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[1] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.FACTOR, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[2] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.DATE, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[3] = op;
+        op = new ColumnSelectorOption<ColumnType>(ColumnType.POSIXCT, ColumnSelectorOption.OptionType.MANY_TO_ONE);
+        ops[4] = op;
+
+        table.setColumnSelectorOptions(ops);
+
+        table.addColumnSelectorListener(columnDataTypeListener);
     }
 
     public ImportTableModel getTableModel() {
@@ -81,6 +302,10 @@ public class DataImportPanel extends javax.swing.JPanel {
 
     //FIXME: temporary solution for memory leak
     public void setTableModelToNull() {
+        table.removeColumnSelectorListener(columnDataTypeListener);
+        tableModel.removeTableModelListener(cellUpdateListener);
+        tableModel.removePropertyChangeListener(tableModelPropertyChangeListener);
+        tableModel.clearAll();
         tableModel = null;
         table = null;
     }
@@ -188,8 +413,9 @@ public class DataImportPanel extends javax.swing.JPanel {
         jLabel9 = new javax.swing.JLabel();
         variablename = new javax.swing.JTextField();
 
+        setPreferredSize(new java.awt.Dimension(500, 500));
+
         table.setHorizontalScrollEnabled(true);
-        table.setInputSelectorTableEnabled(false);
         table.setModel(tableModel);
 
         jLabel7.setText("Separator");
@@ -317,7 +543,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                                 .addComponent(rb_OtherQuote)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(tf_otherQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(20, Short.MAX_VALUE))
         );
         configurationPanelLayout.setVerticalGroup(
             configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -458,7 +684,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel11)
                             .addComponent(jLabel10))))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -486,7 +712,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                     .addComponent(jLabel11)))
         );
 
-        jLabel9.setText("Set variable name");
+        jLabel9.setText("Set Dataframe variable name");
 
         variablename.setText("temp");
         variablename.getDocument().addDocumentListener(new DocumentListener() {
@@ -514,13 +740,9 @@ public class DataImportPanel extends javax.swing.JPanel {
                 .addComponent(jLabel9)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(variablename, javax.swing.GroupLayout.PREFERRED_SIZE, 129, javax.swing.GroupLayout.PREFERRED_SIZE))
-            .addComponent(table, javax.swing.GroupLayout.DEFAULT_SIZE, 531, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(configurationPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(20, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(table, javax.swing.GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(configurationPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -534,7 +756,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                     .addComponent(variablename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(table, javax.swing.GroupLayout.DEFAULT_SIZE, 355, Short.MAX_VALUE))
+                .addComponent(table, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -810,8 +1032,19 @@ public class DataImportPanel extends javax.swing.JPanel {
 
                 if (tableModel.hasRowNames()) {
                     ((SpinnerNumberModel) colEnd.getModel()).setMaximum(tableModel.getMaxColumnCount() - 1);
+
+                    table.removeColumnSelectorListener(columnDataTypeListener);
+                    try {
+                        table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), 0);
+                        tableModel.convertToText(0);
+                        table.setColumnSelectorEnabled(0, false);
+                    } catch (ColumnSelectorVetoException ex) {
+                        Logger.getLogger(DataImportPanel.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    table.addColumnSelectorListener(columnDataTypeListener);
                 } else {
                     ((SpinnerNumberModel) colEnd.getModel()).setMaximum(tableModel.getMaxColumnCount());
+                    table.setColumnSelectorEnabled(0, true);
                 }
 
                 useractionlistener.hasRowNamesChanged((Boolean) evt.getNewValue());
@@ -863,6 +1096,9 @@ public class DataImportPanel extends javax.swing.JPanel {
         }
 
         public void tableCellValueChanged(Object aValue, int rowIndex, int columnIndex) {
+        }
+
+        public void colClassesChanged(String[] classes) {
         }
     }
 

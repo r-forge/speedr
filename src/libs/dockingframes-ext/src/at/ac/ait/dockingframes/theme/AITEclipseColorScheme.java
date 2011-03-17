@@ -45,7 +45,7 @@ public class AITEclipseColorScheme extends EclipseColorScheme {
 //    }
     
     @Override
-    public boolean updateUI(){
+    protected void updateUI(){
         super.updateUI();
 
         
@@ -72,6 +72,6 @@ public class AITEclipseColorScheme extends EclipseColorScheme {
 //        setColor( "stack.border",                       DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
 //
 //        setColor( "selection.border",                   DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
-        return true;
+//        return true;
     }
 }

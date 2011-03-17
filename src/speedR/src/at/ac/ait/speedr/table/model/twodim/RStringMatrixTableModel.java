@@ -1,7 +1,6 @@
 package at.ac.ait.speedr.table.model.twodim;
 
-import at.ac.ait.speedr.table.RColumnIndexModel;
-import javax.swing.table.AbstractTableModel;
+import at.ac.ait.speedr.table.model.RAbstractTableModel;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPMismatchException;
 import org.rosuda.REngine.REXPString;
@@ -11,7 +10,7 @@ import org.rosuda.REngine.RList;
  * TableModel for R matrix objects
  * @author visnei
  */
-public class RStringMatrixTableModel extends AbstractTableModel implements RColumnIndexModel{
+public class RStringMatrixTableModel extends RAbstractTableModel{
 
     private int nrow;
     private int ncol;
@@ -109,4 +108,5 @@ public class RStringMatrixTableModel extends AbstractTableModel implements RColu
     public String getRownameIndexCode(String var) {
         return "dimnames("+var+")[[1]]";
     }
+
 }

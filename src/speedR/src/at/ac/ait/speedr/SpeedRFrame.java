@@ -45,13 +45,19 @@ import org.rosuda.REngine.REngineException;
 import at.ac.ait.speedr.importwizard.WizardIterator;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanel;
 import at.ac.ait.speedr.importwizard.steps.DataSourceWizardStep;
-import at.ac.ait.speedr.table.RColumnIndexModel;
+import at.ac.ait.speedr.table.POSIXctCellRenderer;
+import at.ac.ait.speedr.table.RDate;
+import at.ac.ait.speedr.table.RDateTimeConverter;
+import at.ac.ait.speedr.table.RPOSIXct;
+import at.ac.ait.speedr.table.model.RAbstractTableModel;
 import at.ac.ait.speedr.table.RTableCellEditor;
 import at.ac.ait.speedr.table.RTableCellRenderer;
 import at.ac.ait.speedr.workspace.RConnection;
 import at.ac.ait.speedr.workspace.RUtil;
+import at.ac.arcs.tablefilter.cell.DateCellRenderer;
 import at.ac.arcs.tablefilter.events.FilterEvent;
 import at.ac.arcs.tablefilter.events.FilterListener;
+import at.ac.arcs.tablefilter.filtermodel.DateFilterDevice;
 import au.com.bytecode.opencsv.CSVWriter;
 import bibliothek.gui.DockTheme;
 import bibliothek.gui.dock.common.action.CAction;
@@ -65,6 +71,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Date;
 import javax.swing.JFileChooser;
 import javax.swing.SwingWorker;
 import javax.swing.event.ChangeListener;
@@ -88,7 +95,6 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
         return rif;
     }
-
     private MultipleCDockableFactory<MultipleCDockable, MultipleCDockableLayout> multiDockFactory =
             new EmptyMultipleCDockableFactory<MultipleCDockable>() {
 
@@ -105,7 +111,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
     private RSyntaxTextArea textArea;
     private ImageIcon exportIcon;
     private WorkspaceView workspace;
-//    private Timer refresher;
+
     private CFocusListener filterCodeDockTitleUpdater = new CFocusListener() {
 
         public void focusGained(CDockable dock) {
@@ -134,7 +140,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("speedR");
-        setMinimumSize(new java.awt.Dimension(800, 650));
+        setMinimumSize(new java.awt.Dimension(850, 650));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -168,6 +174,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
             };
             tm.add("KEY_ARCS_THEME", arcseclipse);
             control.setTheme("KEY_ARCS_THEME");
+
             control.addMultipleDockableFactory("Tables", multiDockFactory);
             add(control.getContentArea(), BorderLayout.CENTER);
             activeDockCloaseAction = new DockCloseAction(control);
@@ -193,7 +200,6 @@ public class SpeedRFrame extends javax.swing.JFrame {
             logger.log(Level.SEVERE, ex.getMessage(), ex);
         }
     }
-
 
     private DefaultSingleCDockable createObjectManagerDock() throws REngineException, REXPMismatchException {
         workspace = new WorkspaceView(this);
@@ -233,7 +239,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
                     }
                 });
 
-        control.add(objmgr_dock);
+        control.addDockable(objmgr_dock);
         objmgr_dock.setVisible(true);
         return objmgr_dock;
     }
@@ -249,7 +255,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
         filtercode_dock.setCloseable(false);
         filtercode_dock.setExternalizable(false);
         filtercode_dock.setMinimizable(false);
-        control.add(filtercode_dock);
+        control.addDockable(filtercode_dock);
         filtercode_dock.putAction(CDockable.ACTION_KEY_NORMALIZE, new CNormalizeAction(control) {
 
             @Override
@@ -266,6 +272,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
     public void openTable(TableModel model, String objectname) {
         ARCTable arcTable = new ARCTable();
+
         arcTable.setHorizontalScrollEnabled(true);
 
         arcTable.setFilterRowHeaderVisibleColumnsMask(ARCTable.FRH_SHOW_COUNT_MASK
@@ -273,7 +280,13 @@ public class SpeedRFrame extends javax.swing.JFrame {
         arcTable.setTableRowHeaderVisibleColumnsMask(ARCTable.TRH_MODEL_INDEX_MASK);
         arcTable.setGroupingEnabled(false);
         arcTable.setModel(model);
-        arcTable.setInputSelectorShown(false);
+        arcTable.setColumnSelectorVisible(false);
+
+        arcTable.registerFilterDevice(RDate.class, new DateFilterDevice());
+        arcTable.registerFilterDevice(RPOSIXct.class, new DateFilterDevice());
+        arcTable.registerConverter(RDate.class, new RDateTimeConverter());
+        arcTable.registerConverter(RPOSIXct.class, new RDateTimeConverter());
+
         addFilterTable(arcTable, objectname);
     }
 
@@ -286,10 +299,10 @@ public class SpeedRFrame extends javax.swing.JFrame {
         setDefaultRendererAndEditor(table);
 
         String functionname = title.replace("[[\"", "_").replace("\"]]", "") + "_filter";
-        boolean hasRownames = table.getModel().getColumnName(0).equals("row.names") ||
-                              table.getModel().getColumnName(0).equals("dimnames[[1]]");
-        final FilterListener listener = new TableFilterListener(functionname, 
-                                        hasRownames, (RColumnIndexModel) table.getModel());
+        boolean hasRownames = table.getModel().getColumnName(0).equals("row.names")
+                || table.getModel().getColumnName(0).equals("dimnames[[1]]");
+        final FilterListener listener = new TableFilterListener(functionname,
+                hasRownames, (RAbstractTableModel) table.getModel());
 
         table.addFilterListener(listener);
 
@@ -318,12 +331,18 @@ public class SpeedRFrame extends javax.swing.JFrame {
         table.setDefaultRenderer(Integer.class, cr);
         table.setDefaultRenderer(Double.class, cr);
         table.setDefaultRenderer(String.class, cr);
+        table.setDefaultRenderer(Boolean.class, cr);
+        table.setDefaultRenderer(RDate.class, new DateCellRenderer());
+        table.setDefaultRenderer(RPOSIXct.class, new POSIXctCellRenderer());
 
         RTableCellEditor editor = new RTableCellEditor(table.getDefaultEditor(Object.class));
         table.setDefaultEditor(Object.class, editor);
         table.setDefaultEditor(Integer.class, editor);
         table.setDefaultEditor(Double.class, editor);
         table.setDefaultEditor(String.class, editor);
+        table.setDefaultEditor(RDate.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
+        table.setDefaultEditor(RPOSIXct.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
+
     }
 
     private DefaultMultipleCDockable createFilterTable(final ARCTable table, String title) {
@@ -391,7 +410,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
                         @Override
                         protected Boolean doInBackground() throws Exception {
-                            REXPGenericVector dataframe2 = wizardpanel.getDataframe2();
+                            REXPGenericVector dataframe2 = wizardpanel.getDataframe();
                             String varname = (String) wizardpanel.getProperty(DataImportPanel.PROP_VARIABLENAME);
                             RConnection.exportDataFrame(varname, dataframe2);
                             return null;
@@ -481,10 +500,10 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
         private FilterFunctionCodeGen codegen;
         private String functionname;
-        private RColumnIndexModel model;
+        private RAbstractTableModel model;
         private boolean hasRownames = false;
 
-        public TableFilterListener(String functionname, boolean hasRownames,RColumnIndexModel model) {
+        public TableFilterListener(String functionname, boolean hasRownames, RAbstractTableModel model) {
             this.functionname = functionname;
             this.model = model;
             this.hasRownames = hasRownames;
@@ -658,6 +677,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
                 if (!isMac()) {
                     try {
                         UIManager.setLookAndFeel(new Plastic3DLookAndFeel());
+//                        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                     } catch (Exception ex) {
                         logger.log(Level.WARNING, null, ex);
                     }

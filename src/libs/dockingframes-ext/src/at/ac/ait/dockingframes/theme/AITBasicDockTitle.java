@@ -8,7 +8,6 @@ import bibliothek.gui.Dockable;
 import bibliothek.gui.dock.themes.basic.BasicDockTitle;
 import bibliothek.gui.dock.themes.font.TitleFont;
 import bibliothek.gui.dock.title.DockTitleVersion;
-import bibliothek.gui.dock.util.font.ConstantFontModifier;
 import bibliothek.gui.dock.util.font.DockFont;
 import bibliothek.gui.dock.util.font.GenericFontModifier;
 import bibliothek.util.Condition;

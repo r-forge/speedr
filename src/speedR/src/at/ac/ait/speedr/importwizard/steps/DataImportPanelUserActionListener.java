@@ -19,4 +19,5 @@ public interface DataImportPanelUserActionListener {
     public void rowNamesNoChanged(int newvalue);
     public void variableNameChanged(String newvalue);
     public void tableCellValueChanged(Object aValue,int rowIndex,int columnIndex);
+    public void colClassesChanged(String[] classes);
 }

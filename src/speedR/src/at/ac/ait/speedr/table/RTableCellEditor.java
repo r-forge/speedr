@@ -1,6 +1,8 @@
 package at.ac.ait.speedr.table;
 
 import java.awt.Component;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.EventObject;
 import javax.swing.JTable;
@@ -23,6 +25,14 @@ public class RTableCellEditor implements TableCellEditor {
             nf = NumberFormat.getInstance();
             nf.setGroupingUsed(false);
             nf.setMaximumFractionDigits(9);
+            
+            if (nf instanceof DecimalFormat) {
+                DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
+                dfs.setDecimalSeparator('.');
+                ((DecimalFormat)nf).setDecimalFormatSymbols(dfs);
+                ((DecimalFormat)nf).setDecimalSeparatorAlwaysShown(true);
+                ((DecimalFormat)nf).setMinimumFractionDigits(1);
+            }
         }
     }
 

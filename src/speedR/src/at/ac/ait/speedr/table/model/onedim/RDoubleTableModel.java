@@ -1,7 +1,6 @@
 package at.ac.ait.speedr.table.model.onedim;
 
-import at.ac.ait.speedr.table.RColumnIndexModel;
-import javax.swing.table.AbstractTableModel;
+import at.ac.ait.speedr.table.model.RAbstractTableModel;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPMismatchException;
@@ -11,7 +10,7 @@ import org.rosuda.REngine.RList;
  * TableModel for R matrix objects
  * @author visnei
  */
-public class RDoubleTableModel extends AbstractTableModel implements RColumnIndexModel{
+public class RDoubleTableModel extends RAbstractTableModel {
 
     private int nrow;
     private int ncol;
@@ -33,7 +32,7 @@ public class RDoubleTableModel extends AbstractTableModel implements RColumnInde
         } else {
             throw new RuntimeException("wrong dimension: " + dim.length);
         }
-        this.data=data.asDoubles();
+        this.data = data.asDoubles();
         setRowAndColumnNames(data);
         ncol += rownames != null ? 1 : 0;
     }
@@ -86,14 +85,20 @@ public class RDoubleTableModel extends AbstractTableModel implements RColumnInde
         if (rownames != null && columnIndex == 0) {
             return rownames[rowIndex];
         }
-        return data[rowIndex];
+
+        if (REXPDouble.isNA(data[rowIndex])) {
+            return null;
+        } else {
+            return data[rowIndex];
+        }
     }
 
     public String getColumnIndexCode(int columnIndex) {
-       return "";
+        return "";
     }
 
     public String getRownameIndexCode(String var) {
         return null;
     }
+
 }

@@ -5,23 +5,24 @@
  */
 package at.ac.ait.speedr;
 
-import at.ac.ait.speedr.table.model.onedim.RDoubleTableModel;
-import at.ac.ait.speedr.table.model.onedim.RIntegerTableModel;
-import at.ac.ait.speedr.table.model.onedim.RStringTableModel;
-import at.ac.ait.speedr.table.model.twodim.RDataFrameTableModel;
-import at.ac.ait.speedr.table.model.twodim.RDoubleMatrixTableModel;
-import at.ac.ait.speedr.table.model.twodim.RIntegerMatrixTableModel;
-import at.ac.ait.speedr.table.model.twodim.RStringMatrixTableModel;
+import at.ac.ait.speedr.table.model.onedim.*;
+import at.ac.ait.speedr.table.model.twodim.*;
 import at.ac.ait.speedr.workspace.RObject;
 import at.ac.ait.speedr.workspace.Workspace;
+import java.awt.Point;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JToolTip;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 import javax.swing.table.TableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
+import org.rosuda.REngine.REXPFactor;
 import org.rosuda.REngine.REXPGenericVector;
 import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPMismatchException;
@@ -37,6 +38,9 @@ public class WorkspaceView extends javax.swing.JPanel {
     private static WorkspaceView instance;
     private Workspace workspace;
     private SpeedRFrame mainFrame;
+    private Popup popup;
+
+    private boolean clicked = false;
 
     /** Creates new form WorkspaceView */
     public WorkspaceView(SpeedRFrame mainFrame) {
@@ -74,6 +78,12 @@ public class WorkspaceView extends javax.swing.JPanel {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 workspaceTreeMouseClicked(evt);
             }
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                workspaceTreeMousePressed(evt);
+            }
+            public void mouseReleased(java.awt.event.MouseEvent evt) {
+                workspaceTreeMouseReleased(evt);
+            }
         });
         jScrollPane1.setViewportView(workspaceTree);
 
@@ -90,10 +100,10 @@ public class WorkspaceView extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void workspaceTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_workspaceTreeMouseClicked
-        if (evt.getClickCount() == 2) {
-            try {
+        try {
+            if (evt.getClickCount() == 2) {
                 DefaultMutableTreeNode node = (DefaultMutableTreeNode) workspaceTree.getLastSelectedPathComponent();
-                if (node != workspace.getWorkspace().getRoot()) {
+                if (node != workspace.getWorkspace().getRoot() && node.getUserObject() != null) {
                     RObject ro = (RObject) node.getUserObject();
                     REXP content = workspace.loadContent(ro.getRSymbol());
                     int[] dim = content.dim();
@@ -109,14 +119,12 @@ public class WorkspaceView extends javax.swing.JPanel {
                     } else if (dim.length == 2) {
                         openTwoDimensionalTable(ro, content);
                     }
-                }
-
-
-            } catch (REngineException ex) {
-                Logger.getLogger(WorkspaceView.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (REXPMismatchException ex) {
-                Logger.getLogger(WorkspaceView.class.getName()).log(Level.SEVERE, null, ex);
+                }                
             }
+        } catch (REngineException ex) {
+            Logger.getLogger(WorkspaceView.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (REXPMismatchException ex) {
+            Logger.getLogger(WorkspaceView.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_workspaceTreeMouseClicked
 
@@ -135,9 +143,68 @@ public class WorkspaceView extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_workspaceTreeTreeWillExpand
 
+    private void workspaceTreeMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_workspaceTreeMousePressed
+        if (popup != null) {
+            popup.hide();
+            popup = null;
+        }
+
+        if (evt.isPopupTrigger()) {
+            try {
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) workspaceTree.getLastSelectedPathComponent();
+                if (node != workspace.getWorkspace().getRoot()) {
+                    RObject ro = (RObject) node.getUserObject();
+                    String summaryToolTip = workspace.getSummaryToolTip(ro);
+                    JToolTip ttip = new JToolTip();
+                    ttip.setTipText(summaryToolTip);
+                    Point p = evt.getPoint();
+                    SwingUtilities.convertPointToScreen(p, this);
+                    popup = PopupFactory.getSharedInstance().getPopup(this, ttip, p.x + 20, p.y + 25);
+                    popup.show();
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(WorkspaceView.class.getName()).log(Level.WARNING, null, ex);
+            }
+        }
+    }//GEN-LAST:event_workspaceTreeMousePressed
+
+    private void workspaceTreeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_workspaceTreeMouseReleased
+        if (popup != null) {
+            popup.hide();
+            popup = null;
+        }
+
+        if (evt.isPopupTrigger()) {
+            try {
+                Point p = evt.getPoint();
+                DefaultMutableTreeNode node = (DefaultMutableTreeNode) workspaceTree.getClosestPathForLocation(p.x, p.y).getLastPathComponent();
+                if (node != workspace.getWorkspace().getRoot()) {
+                    RObject ro = (RObject) node.getUserObject();
+                    String summaryToolTip = workspace.getSummaryToolTip(ro);
+                    JToolTip ttip = new JToolTip();
+                    ttip.setTipText(summaryToolTip);
+                    
+                    SwingUtilities.convertPointToScreen(p, this);
+                    popup = PopupFactory.getSharedInstance().getPopup(this, ttip, p.x + 20, p.y + 25);
+                    popup.show();
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(WorkspaceView.class.getName()).log(Level.WARNING, null, ex);
+            }
+        }
+    }//GEN-LAST:event_workspaceTreeMouseReleased
+
     private void openOneDimensionalTable(RObject ro, REXP content) throws REXPMismatchException {
         TableModel model = null;
-        if (content.isInteger()) {
+        if (content.hasAttribute("class")
+                && content.getAttribute("class").asString().equals("Date")) {
+            model = new RDateTableModel((REXPDouble) content);
+        }else if (content.hasAttribute("class")
+                && content.getAttribute("class").asString().equals("POSIXct")) {
+            model = new RPOSIXctTableModel((REXPDouble) content);
+        } else if(content.isFactor()){
+            model = new RFactorTableModel((REXPFactor) content);
+        }else if (content.isInteger()) {
             model = new RIntegerTableModel((REXPInteger) content);
         } else if (content.isNumeric()) {
             model = new RDoubleTableModel((REXPDouble) content);
@@ -153,7 +220,7 @@ public class WorkspaceView extends javax.swing.JPanel {
         if (ro.getType().equals("data.frame")) {
             RDataFrameTableModel model = new RDataFrameTableModel((REXPGenericVector) content);
             mainFrame.openTable(model, ro.getName());
-        } else if (ro.getType().equals("matrix") || ro.getType().equals("table") || ro.getType().equals("array")) {
+        } else if (ro.getType().startsWith("matrix") || ro.getType().equals("table") || ro.getType().equals("array")) {
             TableModel model = null;
             if (content.isInteger()) {
                 model = new RIntegerMatrixTableModel((REXPInteger) content);

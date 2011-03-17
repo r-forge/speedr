@@ -1,13 +1,20 @@
 package at.ac.ait.speedr.importwizard.steps;
 
+import at.ac.ait.speedr.table.RDate;
+import at.ac.ait.speedr.table.RPOSIXct;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.text.ParseException;
+import java.text.ParsePosition;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TreeMap;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 
 /**
  *
@@ -35,6 +42,7 @@ public class ImportTableModel extends AbstractTableModel {
     private int colEnd = 0;
     private boolean addingRow = false;
     private boolean clearing = false;
+    private boolean fireTableStructureChangedCalled = false;
 
     public ImportTableModel() {
         allData = new TreeMap<Integer, Object[]>();
@@ -84,7 +92,7 @@ public class ImportTableModel extends AbstractTableModel {
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         if (hasRownames && columnIndex == 0) {
-            return Object.class;
+            return String.class;
         }
         return classes.get(getRealColumnIndex(columnIndex));
     }
@@ -121,7 +129,6 @@ public class ImportTableModel extends AbstractTableModel {
             return false;
         }
 
-        boolean returnval = false;
         boolean flag = true;
 
         for (int rowIndex = 0; rowIndex < getRowCount(); rowIndex++) {
@@ -132,39 +139,14 @@ public class ImportTableModel extends AbstractTableModel {
         }
 
         if (flag) {
-            returnval = true;
             classes.put(getRealColumnIndex(columnIndex), Double.class);
         } else {
             classes.put(getRealColumnIndex(columnIndex), String.class);
         }
 
-        return returnval;
+        return flag;
     }
 
-//    private boolean checkColumnClass(int columnIndex, int fromRow, int toRow) {
-//        if (columnMismatchCounter.get(getRealColumnIndex(columnIndex)) >= MAXMISMATCH) {
-//            return false;
-//        }
-//
-//        boolean returnval = false;
-//        boolean flag = true;
-//
-//        for (int rowIndex = fromRow; rowIndex < toRow; rowIndex++) {
-//            if (getValueAt(rowIndex, columnIndex) instanceof String) {
-//                flag = false;
-//                break;
-//            }
-//        }
-//
-//        if (flag) {
-//            returnval = true;
-//            classes.put(getRealColumnIndex(columnIndex), Double.class);
-//        } else {
-//            classes.put(getRealColumnIndex(columnIndex), String.class);
-//        }
-//
-//        return returnval;
-//    }
     public int getColumnCount() {
         if (maxColumnCount == 0) {
             return 0;
@@ -205,38 +187,40 @@ public class ImportTableModel extends AbstractTableModel {
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         ensureRowArrayLength(rowIndex, columnIndex);
-        
+
         Object oldValue = getValueAt(rowIndex, columnIndex);
 
         if (aValue != null && aValue instanceof String) {
-            try {
-                aValue = Double.parseDouble(aValue.toString());
+            if (NumberUtils.isNumber(aValue.toString())) {
+                aValue = NumberUtils.createDouble(aValue.toString());
                 allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
                 if (checkColumnClass(columnIndex)) {
                     fireTableStructureChanged();
+                    return;
                 }
-            } catch (NumberFormatException ex) {
+            } else {
                 allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
             }
         } else {
             allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
         }
+
         if (oldValue != null && aValue != null) {
             if (!oldValue.equals(aValue)) {
                 fireTableCellUpdated(rowIndex, columnIndex);
             }
-        }else if(oldValue != null || aValue != null){
+        } else if (oldValue != null || aValue != null) {
             fireTableCellUpdated(rowIndex, columnIndex);
         }
     }
 
-    private void ensureRowArrayLength(int rowIndex,int columnIndex){
+    private void ensureRowArrayLength(int rowIndex, int columnIndex) {
         int realRowIndex = getRealRowIndex(rowIndex);
         int realColumnIndex = getRealColumnIndex(columnIndex);
 
-        if(realColumnIndex >= allData.get(realRowIndex).length){
+        if (realColumnIndex >= allData.get(realRowIndex).length) {
             Object[] oldrow = allData.get(realRowIndex);
-            Object[] newrow = new Object[realColumnIndex+1];
+            Object[] newrow = new Object[realColumnIndex + 1];
             System.arraycopy(oldrow, 0, newrow, 0, oldrow.length);
             allData.put(realRowIndex, newrow);
         }
@@ -288,25 +272,24 @@ public class ImportTableModel extends AbstractTableModel {
 
             int mismatchcount = columnMismatchCounter.get(i);
             if (mismatchcount < MAXMISMATCH) {
-                try {
-                    if (row[i] == null || row[i].trim() == ""
-                            || row[i].trim().equalsIgnoreCase("NA")
-                            || row[i].trim().equalsIgnoreCase("NaN")) {
-                        newRow[i] = null;
-                    } else {
-                        d = Double.parseDouble(row[i]);
-                        newRow[i] = d;
-                    }
-                } catch (NumberFormatException ex) {
+                if (StringUtils.stripToNull(row[i]) == null
+                        || row[i].trim().equalsIgnoreCase("NA")
+                        || row[i].trim().equalsIgnoreCase("NaN")) {
+                    newRow[i] = null;
+                } else if (NumberUtils.isNumber(row[i])) {
+                    d = NumberUtils.createDouble(row[i]);
+                    newRow[i] = d;
+                } else {
                     columnMismatchCounter.put(i, ++mismatchcount);
-                    if (classes.get(i) != String.class) {
-                        classes.put(i, String.class);
+                    classes.put(i, String.class);
+
+                    newRow[i] = row[i];
+                    if (!allData.isEmpty() && classes.get(i) != String.class) {
                         flag = true;
                     }
-                    newRow[i] = row[i];
                 }
             } else {
-                newRow[i] = row[i];
+                newRow[i] = StringUtils.stripToNull(row[i]);
             }
         }
         if (flag) {
@@ -320,6 +303,8 @@ public class ImportTableModel extends AbstractTableModel {
     }
 
     public void setHasColumnNames(boolean hasColnames) {
+        fireTableStructureChangedCalled = false;
+
         if (this.hasColnames != hasColnames) {
             boolean oldValue = this.hasColnames;
             this.hasColnames = hasColnames;
@@ -329,10 +314,14 @@ public class ImportTableModel extends AbstractTableModel {
                 } else {
                     checkAllColumnClasses();
                 }
-                fireTableStructureChanged();
+                if (!fireTableStructureChangedCalled) {
+                    fireTableStructureChanged();
+                }
             }
             propertyChangeSupport.firePropertyChange(PROP.HASCOLUMNNAMES.name(), oldValue, this.hasColnames);
         }
+
+        fireTableStructureChangedCalled = false;
     }
 
     public void setColumnNamesRowIndex(int colnamesRowIndex) {
@@ -396,6 +385,7 @@ public class ImportTableModel extends AbstractTableModel {
             }
             if (!clearing && checkAllColumnClasses()) {
                 fireTableStructureChanged();
+                fireTableStructureChangedCalled = true;
             }
             propertyChangeSupport.firePropertyChange(PROP.RANGE_ROWSTART.name(), oldStartValue, this.rowStart);
         }
@@ -485,20 +475,185 @@ public class ImportTableModel extends AbstractTableModel {
         columnMismatchCounter.clear();
 
         clearing = false;
-
-//        hasColnames = false;
-//        hasRownames = false;
-//        rownamesColumnIndex = 0;
-//        colStart = 0;
-//        colEnd = 0;
-//        rowStart = 0;
-//        rowEnd = 0;
-//        maxColumnCount = 0;
-//        allData.clear();
-//        classes.clear();
-//        columnMismatchCounter.clear();
-//        fireTableStructureChanged();
     }
+
+    public void convertToNumeric(int columnIndex) throws Exception {
+        if (getColumnClass(columnIndex) != Double.class) {
+            checkNumeric(columnIndex);
+
+            for (int i = 0; i < getRowCount(); i++) {
+                if (!(getValueAt(i, columnIndex) instanceof Number)) {
+                    if (getValueAt(i, columnIndex) == null
+                            || StringUtils.isBlank(getValueAt(i, columnIndex).toString())) {
+                        setValueAt(null, i, columnIndex);
+                    } else {
+                        setValueAt(NumberUtils.createDouble(StringUtils.deleteWhitespace(getValueAt(i, columnIndex).toString())), i, columnIndex);
+                    }
+                }
+            }
+
+            classes.put(getRealColumnIndex(columnIndex), Double.class);
+            fireTableStructureChanged();
+        }
+    }
+
+    private void checkNumeric(int columnIndex) throws Exception {
+        StringBuilder err = new StringBuilder();
+        err.append("Non-numeric values found in column ").append(getColumnName(columnIndex)).append("\nRows containing non-numeric values:\n");
+
+        int failcount = 0;
+        for (int i = 0; i < getRowCount(); i++) {
+            if (getValueAt(i, columnIndex) != null
+                    && !StringUtils.isBlank(getValueAt(i, columnIndex).toString())
+                    && !NumberUtils.isNumber(getValueAt(i, columnIndex).toString())) {
+
+                failcount++;
+                err.append(i + 1).append(",");
+                if (failcount == 10) {
+                    err.deleteCharAt(err.length() - 1);
+                    err.append("...");
+                    break;
+                }
+            }
+        }
+
+        if (failcount > 0) {
+            throw new Exception(err.toString());
+        }
+    }
+
+    public void convertToText(int columnIndex) {
+        if (getColumnClass(columnIndex) == RDate.class || getColumnClass(columnIndex) == RPOSIXct.class ) {
+
+            SimpleDateFormat sdf;
+            if(getColumnClass(columnIndex) == RDate.class){
+                sdf = new SimpleDateFormat("yyyy-MM-dd");
+            }else{
+                sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:");
+            }
+            for (int i = 0; i < getRowCount(); i++) {
+                if (getValueAt(i, columnIndex) != null) {
+                    allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = sdf.format((Date) getValueAt(i, columnIndex));
+                }
+            }
+        }
+        if (getColumnClass(columnIndex) != String.class) {
+            classes.put(getRealColumnIndex(columnIndex), String.class);
+            fireTableStructureChanged();
+        }
+    }
+
+    public void convertToDate(int columnIndex, String[] pattern) throws Exception {
+        if (getColumnClass(columnIndex) == RDate.class) {
+            return;
+        } else if (getColumnClass(columnIndex) == RPOSIXct.class) {
+            for (int i = 0; i < getRowCount(); i++) {
+                if (getValueAt(i, columnIndex) != null) {
+                    allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = new RDate((Date) getValueAt(i, columnIndex));
+                }
+            }
+
+            classes.put(getRealColumnIndex(columnIndex), RDate.class);
+            fireTableStructureChanged();
+            return;
+        }        
+
+        ArrayList<Date> checkDate = checkDate(columnIndex, pattern);
+
+        for (int i = 0; i < checkDate.size(); i++) {
+            if (checkDate.get(i) == null) {
+                allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = null;
+            } else {
+                allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = new RDate(checkDate.get(i));
+            }
+        }
+
+        classes.put(getRealColumnIndex(columnIndex), RDate.class);
+        fireTableStructureChanged();
+    }
+
+    public void convertToPOSIXct(int columnIndex, String[] pattern) throws Exception {
+        if (getColumnClass(columnIndex) == RPOSIXct.class) {
+            return;
+        } else if (getColumnClass(columnIndex) == RDate.class) {
+            for (int i = 0; i < getRowCount(); i++) {
+                if (getValueAt(i, columnIndex) != null) {
+                    allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = new RPOSIXct((Date) getValueAt(i, columnIndex));
+                }
+            }
+
+            classes.put(getRealColumnIndex(columnIndex), RPOSIXct.class);
+            fireTableStructureChanged();
+            return;
+        }
+
+        ArrayList<Date> checkDate = checkDate(columnIndex, pattern);
+
+        for (int i = 0; i < checkDate.size(); i++) {
+            if (checkDate.get(i) == null) {
+                allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = null;
+            } else {
+                allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = new RPOSIXct(checkDate.get(i));
+            }
+        }
+
+        classes.put(getRealColumnIndex(columnIndex), RPOSIXct.class);
+        fireTableStructureChanged();
+    }
+
+    private ArrayList<Date> checkDate(int columnIndex, String[] parsePatterns) throws Exception {
+        SimpleDateFormat parser = new SimpleDateFormat();
+        parser.setLenient(false);
+        ParsePosition pos = new ParsePosition(0);
+
+        StringBuilder err = new StringBuilder();
+
+        err.append("Parse error on rows: ");
+
+        ArrayList<Date> dates = new ArrayList<Date>();
+        int failcount = 0;
+        for (int i = 0; i < getRowCount() && failcount < 10; i++) {
+            if (getValueAt(i, columnIndex) != null
+                    && !StringUtils.isBlank(getValueAt(i, columnIndex).toString())) {
+                try {
+                    dates.add(parseDate(getValueAt(i, columnIndex).toString().trim(), parsePatterns,parser,pos));
+                } catch (ParseException ex) {
+                    failcount++;
+                    err.append(i + 1).append(',');
+                }
+            } else {
+                dates.add(null);
+            }
+        }
+
+        if (failcount > 0) {
+            if (failcount == 10) {
+                err.append("...");
+            } else {
+                err.deleteCharAt(err.length() - 1);
+            }
+            throw new Exception(err.toString());
+        }
+
+        return dates;
+    }
+
+    private Date parseDate(String str,String[] parsePatterns,SimpleDateFormat parser,ParsePosition pos) throws ParseException{
+        for (int i = 0; i < parsePatterns.length; i++) {
+
+            String pattern = parsePatterns[i];
+            parser.applyPattern(pattern);
+            pos.setIndex(0);
+
+            Date date = parser.parse(str, pos);
+
+            if (date != null) {
+                return date;
+            }
+        }
+        throw new ParseException("Unable to parse the date: " + str, -1);
+    }
+
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**
@@ -517,100 +672,5 @@ public class ImportTableModel extends AbstractTableModel {
      */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propertyChangeSupport.removePropertyChangeListener(listener);
-    }
-
-    public static void main(String[] args) throws Exception {
-//        final NewJFrame f = new NewJFrame();
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//
-//            public void run() {
-//                f.setVisible(true);
-//            }
-//        });
-//        final ImportTableModel model = new ImportTableModel();
-        //        f.setModel(model);
-//        String readFileToString = FileUtils.readFileToString(new File("C:/Documents and Settings/visnei/My Documents/iris2.txt"));
-//
-//        CSVReader csvReader =
-//                new CSVReader(new InputStreamReader(new FileInputStream("E:/projects/speedR/sampledata/t1.txt")), ' ', '\'');
-//        String[] next;
-//        while ((next = csvReader.readNext()) != null) {
-//            System.out.println(next.length);
-//        }
-//        csvReader.setSkipEmptyRecords(true);
-//        ArrayList<String[]> rowlist = new ArrayList<String[]>();
-//        String[] record;
-//        while (csvReader.readRecord()) {
-//            record = csvReader.getValues();
-//            rowlist.add(record);
-//        }
-//        java.awt.EventQueue.invokeLater(new Runnable() {
-//
-//            public void run() {
-//                model.addRow(rowlist);
-//                model.setHasColumnNames(true);
-//                model.setHasRowNames(true);
-//                model.setColumnNamesRowIndex(2);
-//                System.out.println("xxx: " + model.getRowStart());
-//                writeTable(model);
-////                model.setRowNamesColumnIndex(1);
-//            }
-//        });
-//        fillModel(model);
-//        model.clearAll();
-//        fillModel(model);
-//        model.setHasColumnNames(true);
-//        writeTable(model);
-//        model.setColumnNamesRowIndex(0);
-//        model.setHasRowNames(true);
-//        model.setRowNamesColumnIndex(1);
-//        model.setColEnd(2);
-//        model.setRowStart(2);
-//        model.setValueAt("25", 4, 4);
-//
-//        System.out.println(model.getColumnClass(4));
-//        model.addRow(rowlist);
-//        writeTable(model);
-    }
-
-    private static void fillModel(ImportTableModel model) {
-        ArrayList<String[]> rowlist = new ArrayList<String[]>();
-        String[] row = {"A1", "B1", "C1", "D1"};
-
-        rowlist.add(row);
-
-        row = new String[]{"1", "2", "3", "4", "5"};
-        rowlist.add(row);
-
-        row = new String[]{"6", "7", "8", "9", "10"};
-        rowlist.add(row);
-
-        row = new String[]{"11", "12", "13", "14", "15"};
-        rowlist.add(row);
-
-        row = new String[]{"16", "17", "18", "19", "20"};
-        rowlist.add(row);
-
-        row = new String[]{"21", "22", "23", "24", "ff"};
-        rowlist.add(row);
-
-        row = new String[]{"26", "27", "28", "29", "30"};
-        rowlist.add(row);
-
-        model.addRow(rowlist);
-    }
-
-    private static void writeTable(TableModel model) {
-        for (int i = 0; i < model.getColumnCount(); i++) {
-            System.out.print(model.getColumnName(i) + "\t");
-        }
-
-        System.out.println("");
-        for (int i = 0; i < model.getRowCount(); i++) {
-            for (int j = 0; j < model.getColumnCount(); j++) {
-                System.out.print(model.getValueAt(i, j) + "\t");
-            }
-            System.out.println("");
-        }
     }
 }

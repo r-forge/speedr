@@ -21,7 +21,7 @@ public class RObject {
     }
 
     public String getRSymbol() {
-        if (parent != null && parent.getType().equals("list")) {
+        if (parent != null && (parent.getType().equals("list") || parent.getType().equals("data.frame"))) {
             if (getName().matches("\\d+")) {
                 return parent.getRSymbol() + "[[" + getName() + "]]";
             } else {

@@ -1,7 +1,6 @@
 package at.ac.ait.speedr.table.model.onedim;
 
-import at.ac.ait.speedr.table.RColumnIndexModel;
-import javax.swing.table.AbstractTableModel;
+import at.ac.ait.speedr.table.model.RAbstractTableModel;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPMismatchException;
@@ -11,7 +10,7 @@ import org.rosuda.REngine.RList;
  * TableModel for R matrix objects
  * @author visnei
  */
-public class RIntegerTableModel extends AbstractTableModel implements RColumnIndexModel{
+public class RIntegerTableModel extends RAbstractTableModel {
 
     private int nrow;
     private int ncol;
@@ -88,7 +87,11 @@ public class RIntegerTableModel extends AbstractTableModel implements RColumnInd
             return rownames[rowIndex];
         }
 
-        return data[rowIndex];
+        if (REXPInteger.isNA(data[rowIndex])) {
+            return null;
+        } else {
+            return data[rowIndex];
+        }
     }
 
     public String getColumnIndexCode(int columnIndex) {
@@ -98,4 +101,5 @@ public class RIntegerTableModel extends AbstractTableModel implements RColumnInd
     public String getRownameIndexCode(String var) {
         return null;
     }
+
 }

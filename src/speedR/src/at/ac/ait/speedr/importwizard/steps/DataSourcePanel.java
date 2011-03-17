@@ -5,10 +5,15 @@
  */
 package at.ac.ait.speedr.importwizard.steps;
 
+import at.ac.ait.speedr.workspace.RConnection;
 import java.awt.event.ItemEvent;
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.rosuda.REngine.REXPMismatchException;
+import org.rosuda.REngine.REngineException;
 
 /**
  *
@@ -29,9 +34,16 @@ public class DataSourcePanel extends javax.swing.JPanel implements DocumentListe
     public DataSourcePanel() {
         initComponents();
         fileChooser.setSelectedFile(null);
-        if (lastUsedDir != null) {
-            fileChooser.setCurrentDirectory(lastUsedDir);
+
+        try {
+            lastUsedDir = new File(RConnection.eval("getwd()").asString());
+        } catch (REngineException ex) {
+            Logger.getLogger(DataSourcePanel.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (REXPMismatchException ex) {
+            Logger.getLogger(DataSourcePanel.class.getName()).log(Level.SEVERE, null, ex);
         }
+
+        fileChooser.setCurrentDirectory(lastUsedDir);
     }
 
     public String getCurrentDataSource() {

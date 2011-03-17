@@ -11,11 +11,9 @@ import at.ac.ait.speedr.workspace.RUtil;
 import at.ac.arcs.tablefilter.ARCTable;
 import at.ac.arcs.tablefilter.events.FilterListener;
 import java.beans.PropertyChangeListener;
-import java.text.NumberFormat;
 import java.util.NoSuchElementException;
 import javax.swing.table.DefaultTableModel;
 import org.rosuda.REngine.REXPGenericVector;
-
 
 /**
  *
@@ -32,12 +30,8 @@ public class WizardIterator {
     private WizardPanel settings;
     private DataImportPanelUserActionListener useractionlistener;
     private FilterListener filterlistener;
-    private NumberFormat nf;
 
     public WizardIterator() {
-        nf = NumberFormat.getInstance();
-        nf.setGroupingUsed(false);
-        nf.setMaximumFractionDigits(9);
     }
 
     public WizardPanel.Step current() {
@@ -114,7 +108,7 @@ public class WizardIterator {
         }
         index--;
     }
-   
+
     public REXPGenericVector instantiate() {
         System.gc();
         ARCTable arctable = ((DataImportPanel) current().getComponent()).getARCTable();
@@ -131,9 +125,9 @@ public class WizardIterator {
             if (current().getComponent() instanceof DataImportPanel) {
                 DataImportPanel p = (DataImportPanel) current().getComponent();
                 p.removePropertyChangeListener((PropertyChangeListener) current());
-                if (p.getARCTable().getModel() instanceof ImportTableModel) {
-                    p.getARCTable().setModel(new DefaultTableModel());
-                }
+//                if (p.getARCTable().getModel() instanceof ImportTableModel) {
+//                    p.getARCTable().setModel(new DefaultTableModel());
+//                }
                 p.setTableModelToNull();
             }
 
