@@ -154,11 +154,11 @@ speedR is equipped with a simple expression syntax which makes it easy to write 
 proper filter expressions are offered in a dropdown menu when clicking a cell in the filter editor.
 
 <ul style="line-height:150%;">
-	<li> <strong>'<' [number]:</strong>  Less than a <i>number</i>
-	<li> <strong>'>' [number]:</strong>  Greater than a <i>number</i>
-	<li> <strong>'<=' [number]:</strong> Less than or equals to a <i>number</i>
-	<li> <strong>'>=' [number]:</strong> Greater than or equals a <i>number</i>
-	<li> <strong>[number] 'to' [number]:</strong> Defines an intervall. Ex. <i>5</i> <strong>to</strong> <i>10</i>.
+	<li> <strong>'<' [value]:</strong>  Less than a <i>value</i> (number, Date or POSIXct).
+	<li> <strong>'>' [value]:</strong>  Greater than a <i>value</i>
+	<li> <strong>'<=' [value]:</strong> Less than or equals to a <i>value</i>
+	<li> <strong>'>=' [value]:</strong> Greater than or equals a <i>value</i>
+	<li> <strong>[value] 'to' [value]:</strong> Defines an intervall. Ex. <i>5</i> <strong>to</strong> <i>10</i>.
 	<li> <strong>'is.na' :</strong> Selects a row if the cell value is  <i>NA</i>
 	<li> <strong>'contains' [string]:</strong> Selects cells having strings which contains given character set.
 	<li> <strong>'equals'  [string]:</strong> The cells are only than selected if cell value is <i>equals</i> to the given string. Note that this is case-sensitive.
