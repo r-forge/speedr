@@ -13,11 +13,12 @@ public interface DataImportPanelUserActionListener {
     public void rowEndChange(int newvalue);
     public void colStartChanged(int newvalue);
     public void colEndChange(int newvalue);
-    public void hasRowHeaderChanged(Boolean newvalue);
+    public void hasColumnNamesChanged(Boolean newvalue);
     public void columnNamesRowIndexChanged(int newvalue);
     public void hasRowNamesChanged(Boolean newvalue);
     public void rowNamesNoChanged(int newvalue);
     public void variableNameChanged(String newvalue);
     public void tableCellValueChanged(Object aValue,int rowIndex,int columnIndex);
     public void colClassesChanged(String[] classes);
+    public void colClassChanged(int columnIndex,String clazz);
 }

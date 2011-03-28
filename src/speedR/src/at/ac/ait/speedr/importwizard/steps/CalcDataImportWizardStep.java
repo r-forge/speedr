@@ -22,6 +22,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import at.ac.ait.speedr.importwizard.WizardPanel;
 import at.ac.ait.speedr.importwizard.WizardValidationException;
+import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
 import au.com.bytecode.opencsv.CSVReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -184,10 +185,19 @@ public class CalcDataImportWizardStep implements
             try {
                 CSVReader csvReader =
                         new CSVReader(new InputStreamReader(in), ',', '"');
+                ImportTableModelHelper modelhelper = new ImportTableModelHelper();
+                int line = 0;
+
                 String[] next;
                 while (!isStopped && (next = csvReader.readNext()) != null) {
                     publish(next);
+                    modelhelper.saveRowDataSet(line, next);
+                    line++;
                 }
+
+                modelhelper.close();
+                impPanel.setImportTableModelHelper(modelhelper);
+                
                 in.close();
             } catch (IOException ex) {
                 logger.log(Level.WARNING, ex.getMessage(), ex);
@@ -211,6 +221,7 @@ public class CalcDataImportWizardStep implements
         protected void done() {
             setValid(true);
             getComponent().setConfigurationPanelEnabled(true);
+            tableModel.convertColumnsToNumericIfPossible();
         }
     }
 

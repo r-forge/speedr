@@ -6,8 +6,11 @@
  */
 package at.ac.ait.speedr.importwizard.steps;
 
+import at.ac.ait.speedr.table.RDateTimePickerCellEditor;
+import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
 import at.ac.ait.speedr.table.POSIXctCellRenderer;
 import at.ac.ait.speedr.table.RDate;
+import at.ac.ait.speedr.table.RDatePickerCellEditor;
 import at.ac.ait.speedr.table.RDateTimeConverter;
 import at.ac.ait.speedr.table.RPOSIXct;
 import at.ac.ait.speedr.table.RTableCellEditor;
@@ -21,15 +24,24 @@ import at.ac.arcs.tablefilter.events.ColumnSelectorVetoException;
 import at.ac.arcs.tablefilter.events.FilterListener;
 import at.ac.arcs.tablefilter.filtermodel.DateFilterDevice;
 import at.ac.arcs.tablefilter.ist.ColumnSelectorOption;
-import java.awt.HeadlessException;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingWorker;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
@@ -37,6 +49,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.PlainDocument;
+import net.miginfocom.swing.MigLayout;
 
 /**
  *
@@ -47,8 +60,8 @@ public class DataImportPanel extends javax.swing.JPanel {
     public static final String PROP_DELIMITER = "DELIMITER";
     public static final String PROP_QUALIFIER = "QUALIFIER";
     public static final String PROP_VARIABLENAME = "VARIABLENAME";
+    private ImportTableModelHelper tableModelHelper;
     private ImportTableModel tableModel = new ImportTableModel();
-
     private final TableModelPropertyChangeListener tableModelPropertyChangeListener = new TableModelPropertyChangeListener();
     private DataImportPanelUserActionListener useractionlistener = new DummyUserActionListener();
     private TableModelListener cellUpdateListener = new TableModelListener() {
@@ -59,13 +72,12 @@ public class DataImportPanel extends javax.swing.JPanel {
                     && e.getColumn() != TableModelEvent.HEADER_ROW) {
                 int row = e.getFirstRow();
                 int col = e.getColumn();
-                Object value = tableModel.getValueAt(row, col);
-                useractionlistener.tableCellValueChanged(value, row, col);
+                useractionlistener.tableCellValueChanged(tableModel.getValueAt(row, col), row, col);
             }
         }
     };
-    
     private boolean updateEnds = true;
+    private boolean configPanelEnabled = false; //true means that any changes made afterwards is from the user.
 
     public static enum ColumnType {
 
@@ -81,161 +93,7 @@ public class DataImportPanel extends javax.swing.JPanel {
             return displayname;
         }
     };
-
-    ColumnSelectorListener<ColumnType> columnDataTypeListener = new ColumnSelectorListener<ColumnType>() {
-
-        private String[] colClasses;
-
-        public void columnSelectionChanged(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
-            table.removeColumnSelectorListener(this);
-            try {
-                if (evt.getColumn() == -1) {
-                    if (tableModel.getColumnCount() > 0) {
-                        if (colClasses == null || colClasses.length != tableModel.getColumnCount()) {
-                            colClasses = new String[tableModel.getColumnCount()];
-                        }
-                        for (int i = 0; i < tableModel.getColumnCount(); i++) {
-                            if (tableModel.getColumnClass(i) == Double.class) {
-                                table.setColumnSelectorOption(ColumnType.NUMERIC.toString(), i);
-                                colClasses[i] = ColumnType.NUMERIC.toString().toLowerCase();
-                            } else if (tableModel.getColumnClass(i) == String.class) {
-                                table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), i);
-                                colClasses[i] = ColumnType.CHARACTER.toString().toLowerCase();
-                            } else if (tableModel.getColumnClass(i) == RDate.class) {
-                                table.setColumnSelectorOption(ColumnType.DATE.toString(), i);
-                                colClasses[i] = ColumnType.DATE.toString();
-                            } else if (tableModel.getColumnClass(i) == RPOSIXct.class) {
-                                table.setColumnSelectorOption(ColumnType.POSIXCT.toString(), i);
-                                colClasses[i] = ColumnType.POSIXCT.toString();
-                            }
-                        }
-
-                        if (tableModel.hasRowNames() && table.isColumnSelectorEnabled(0)) {
-                            tableModel.convertToText(0);
-                            table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), 0);
-                            table.setColumnSelectorEnabled(0, false);
-                        }
-                    }
-                } else if (evt.getNewValue().getObject() == ColumnType.CHARACTER) {
-                    tableModel.convertToText(evt.getColumn());
-                    colClasses[evt.getColumn()] = ColumnType.CHARACTER.toString().toLowerCase();
-                    callColClassesChanged();
-                } else if (evt.getNewValue().getObject() == ColumnType.FACTOR) {
-                    tableModel.convertToText(evt.getColumn());
-                    colClasses[evt.getColumn()] = ColumnType.FACTOR.toString().toLowerCase();
-                    callColClassesChanged();
-                } else if (evt.getNewValue().getObject() == ColumnType.NUMERIC) {
-                    convertToNumeric(evt);
-                } else if (evt.getNewValue().getObject() == ColumnType.DATE) {
-                    convertToDate(evt);
-                } else if (evt.getNewValue().getObject() == ColumnType.POSIXCT) {
-                    convertToPOSIXct(evt);
-                }
-            } finally {
-                table.addColumnSelectorListener(this);
-            }
-        }
-
-        private void convertToNumeric(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException, HeadlessException {
-            try {
-                tableModel.convertToNumeric(evt.getColumn());
-                colClasses[evt.getColumn()] = ColumnType.NUMERIC.toString().toLowerCase();
-                callColClassesChanged();
-            } catch (Exception ex) {
-                JOptionPane.showMessageDialog(DataImportPanel.this, ex.getMessage());
-                throw new ColumnSelectorVetoException(ex);
-            }
-        }
-
-        private void convertToDate(ColumnSelectorEvent<ColumnType> evt) throws HeadlessException, ColumnSelectorVetoException {
-            try {
-                tableModel.convertToDate(evt.getColumn(), RUtil.parseDatePattern);
-                colClasses[evt.getColumn()] = ColumnType.DATE.toString();
-                callColClassesChanged();
-            } catch (Exception ex) {
-                StringBuilder errmsg = new StringBuilder("Could not parse to Date using the following formats:\n");
-
-                for(String rformat:RUtil.parseDatePatternInRFormat){
-                    errmsg.append(rformat).append('\n');
-                }
-
-                errmsg.append(ex.getMessage()).append("\n Would you like to set the Date pattern below (system default proposed) and try again?");
-                
-                String pattern = (String) JOptionPane.showInputDialog(
-                        DataImportPanel.this,
-                        errmsg,
-                        "Date Format",
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        null,
-                        RUtil.defaultDatePatternInRFormat);
-                //If a string was returned, say so.
-                if ((pattern != null) && (pattern.length() > 0)) {
-                    try {
-                        tableModel.convertToDate(evt.getColumn(), new String[]{RUtil.convertPatternFromRFormat(pattern)});
-                        colClasses[evt.getColumn()] = ColumnType.DATE.toString()+"="+pattern;
-                        callColClassesChanged();
-                    } catch (Exception ex1) {
-                        errmsg = new StringBuilder("Could not parse to Date using the following format:\n").append(pattern);
-                        errmsg.append(ex1.getMessage());
-                        JOptionPane.showMessageDialog(DataImportPanel.this, errmsg);
-                        throw new ColumnSelectorVetoException(ex1);
-                    }
-                } else {
-                    throw new ColumnSelectorVetoException(ex);
-                }
-            }
-        }
-
-        private void convertToPOSIXct(ColumnSelectorEvent<ColumnType> evt) throws HeadlessException, ColumnSelectorVetoException {
-            try {
-                tableModel.convertToPOSIXct(evt.getColumn(), RUtil.parsePOSIXctPattern);
-                colClasses[evt.getColumn()] = ColumnType.POSIXCT.toString();
-                callColClassesChanged();
-            } catch (Exception ex) {
-                StringBuilder errmsg = new StringBuilder("Could not parse to POSIXct using the following formats:\n");
-
-                for(String rformat:RUtil.parsePOSIXctPatternInRFormat){
-                    errmsg.append(rformat).append('\n');
-                }
-
-                errmsg.append(ex.getMessage()).append("\n Would you like to set the Date pattern below (system default proposed) and try again?");
-
-                String pattern = (String) JOptionPane.showInputDialog(
-                        DataImportPanel.this,
-                        errmsg,
-                        "POSIXct Format",
-                        JOptionPane.QUESTION_MESSAGE,
-                        null,
-                        null,
-                        RUtil.defaultPOSIXctPatternInRFormat);
-                //If a string was returned, say so.
-                if ((pattern != null) && (pattern.length() > 0)) {
-                    try {
-                        tableModel.convertToPOSIXct(evt.getColumn(), new String[]{RUtil.convertPatternFromRFormat(pattern)});
-                        colClasses[evt.getColumn()] = ColumnType.POSIXCT.toString()+"="+pattern;
-                        callColClassesChanged();
-                    } catch (Exception ex1) {
-                        errmsg = new StringBuilder("Could not parse to POSIXct using the following format:\n")
-                                .append(pattern).append('\n').append(ex1.getMessage());
-                        
-                        JOptionPane.showMessageDialog(DataImportPanel.this, errmsg);
-                        throw new ColumnSelectorVetoException(ex1);
-                    }
-                } else {
-                    throw new ColumnSelectorVetoException(ex);
-                }
-            }
-        }
-
-        private void callColClassesChanged() {
-            if (tableModel.hasRowNames()) {
-                useractionlistener.colClassesChanged(Arrays.copyOfRange(colClasses, 1, colClasses.length));
-            } else {
-                useractionlistener.colClassesChanged(colClasses);
-            }
-        }
-    };
+    ColumnTypeListener columnDataTypeListener = new ColumnTypeListener();
 
     /** Creates new form DataImportPanel */
     public DataImportPanel(boolean showConfigurationPanel) {
@@ -264,8 +122,8 @@ public class DataImportPanel extends javax.swing.JPanel {
         table.setDefaultEditor(Integer.class, editor);
         table.setDefaultEditor(Double.class, editor);
         table.setDefaultEditor(String.class, editor);
-        table.setDefaultEditor(RDate.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
-        table.setDefaultEditor(RPOSIXct.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
+        table.setDefaultEditor(RDate.class, new RDatePickerCellEditor());
+        table.setDefaultEditor(RPOSIXct.class, new RDateTimePickerCellEditor());
 
         table.registerFilterDevice(RDate.class, new DateFilterDevice());
         table.registerFilterDevice(RPOSIXct.class, new DateFilterDevice());
@@ -294,6 +152,10 @@ public class DataImportPanel extends javax.swing.JPanel {
         table.setColumnSelectorOptions(ops);
 
         table.addColumnSelectorListener(columnDataTypeListener);
+    }
+
+    public void setImportTableModelHelper(ImportTableModelHelper tableModelHelper) {
+        this.tableModelHelper = tableModelHelper;
     }
 
     public ImportTableModel getTableModel() {
@@ -331,7 +193,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         rowsEnd.setEnabled(enabled);
         colStart.setEnabled(enabled);
         colEnd.setEnabled(enabled);
-        cb_HeaderRow.setEnabled(enabled);
+        cb_ColumnNames.setEnabled(enabled);
         if (tableModel.getMaxColumnCount() != 1) {
             cb_RowNames.setEnabled(enabled);
         }
@@ -352,6 +214,8 @@ public class DataImportPanel extends javax.swing.JPanel {
             ((SpinnerNumberModel) rowsEnd.getModel()).setMaximum(tableModel.getMaxRowCount());
             updateEnds = true;
         }
+
+        configPanelEnabled = enabled;
     }
 
     public void resetTableModel() {
@@ -396,7 +260,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         tf_otherQuote = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        cb_HeaderRow = new javax.swing.JCheckBox();
+        cb_ColumnNames = new javax.swing.JCheckBox();
         rowNamesColumnIndex = new javax.swing.JSpinner();
         cb_RowNames = new javax.swing.JCheckBox();
         jLabel3 = new javax.swing.JLabel();
@@ -571,15 +435,15 @@ public class DataImportPanel extends javax.swing.JPanel {
 
         jLabel2.setText("Rows: from");
 
-        cb_HeaderRow.setText("Use row");
-        cb_HeaderRow.addItemListener(new java.awt.event.ItemListener() {
+        cb_ColumnNames.setText("Use row");
+        cb_ColumnNames.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                cb_HeaderRowItemStateChanged(evt);
+                cb_ColumnNamesItemStateChanged(evt);
             }
         });
-        cb_HeaderRow.addActionListener(new java.awt.event.ActionListener() {
+        cb_ColumnNames.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cb_HeaderRowActionPerformed(evt);
+                cb_ColumnNamesActionPerformed(evt);
             }
         });
 
@@ -674,7 +538,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                                 .addComponent(colEnd, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cb_HeaderRow)
+                            .addComponent(cb_ColumnNames)
                             .addComponent(cb_RowNames))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
@@ -698,7 +562,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                         .addComponent(rowsEnd, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addComponent(jLabel2)
                         .addComponent(colNamesRowIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(cb_HeaderRow)
+                        .addComponent(cb_ColumnNames)
                         .addComponent(jLabel10))
                     .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                     .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -756,7 +620,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                     .addComponent(variablename, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel9))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(table, javax.swing.GroupLayout.DEFAULT_SIZE, 353, Short.MAX_VALUE))
+                .addComponent(table, javax.swing.GroupLayout.DEFAULT_SIZE, 308, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -764,20 +628,26 @@ public class DataImportPanel extends javax.swing.JPanel {
         rowNamesColumnIndex.setEnabled(cb_RowNames.isSelected());
         ((SpinnerNumberModel) rowNamesColumnIndex.getModel()).setMaximum(tableModel.getColumnCount());
         tableModel.setHasRowNames(cb_RowNames.isSelected());
-        useractionlistener.hasRowNamesChanged(cb_RowNames.isSelected());
+        if (configPanelEnabled) {
+            useractionlistener.hasRowNamesChanged(cb_RowNames.isSelected());
+        }
     }//GEN-LAST:event_cb_RowNamesActionPerformed
 
-    private void cb_HeaderRowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_HeaderRowActionPerformed
-        tableModel.setHasColumnNames(cb_HeaderRow.isSelected());
-        useractionlistener.hasRowHeaderChanged(cb_HeaderRow.isSelected());
-    }//GEN-LAST:event_cb_HeaderRowActionPerformed
+    private void cb_ColumnNamesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cb_ColumnNamesActionPerformed
+        tableModel.setHasColumnNames(cb_ColumnNames.isSelected());
+        if (configPanelEnabled) {
+            useractionlistener.hasColumnNamesChanged(cb_ColumnNames.isSelected());
+        }
+    }//GEN-LAST:event_cb_ColumnNamesActionPerformed
 
     private void rowsStartStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rowsStartStateChanged
         Integer newvalue = (Integer) rowsStart.getValue();
 
         if (newvalue <= (Integer) rowsEnd.getValue()) {
             tableModel.setRowStart(newvalue - 1);
-            useractionlistener.rowStartChanged(newvalue);
+            if (configPanelEnabled) {
+                useractionlistener.rowStartChanged(newvalue);
+            }
         } else {
             rowsStart.setValue(rowsStart.getPreviousValue());
         }
@@ -789,7 +659,7 @@ public class DataImportPanel extends javax.swing.JPanel {
 
         if (newvalue >= (Integer) rowsStart.getValue()) {
             tableModel.setRowEnd(newvalue - 1);
-            if (updateEnds) {
+            if (updateEnds && configPanelEnabled) {
                 useractionlistener.rowEndChange(newvalue);
             }
         } else {
@@ -806,6 +676,8 @@ public class DataImportPanel extends javax.swing.JPanel {
         } else {
             colStart.setValue(colStart.getPreviousValue());
         }
+
+        ((SpinnerNumberModel) rowNamesColumnIndex.getModel()).setMaximum(tableModel.getColumnCount());
     }//GEN-LAST:event_colStartStateChanged
 
     private void colEndStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_colEndStateChanged
@@ -813,65 +685,91 @@ public class DataImportPanel extends javax.swing.JPanel {
 
         if (newvalue >= (Integer) colStart.getValue()) {
             tableModel.setColEnd(newvalue - 1);
-            if (updateEnds) {
+            if (updateEnds && configPanelEnabled) {
                 useractionlistener.colEndChange(newvalue);
             }
         } else {
             colEnd.setValue(colEnd.getPreviousValue());
         }
+
+        if (newvalue == 1 && !cb_RowNames.isSelected()) {
+            cb_RowNames.setEnabled(false);
+        } else {
+            cb_RowNames.setEnabled(true);
+        }
+
+        ((SpinnerNumberModel) rowNamesColumnIndex.getModel()).setMaximum(tableModel.getColumnCount());
     }//GEN-LAST:event_colEndStateChanged
 
     private void rb_NoQuoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_NoQuoteActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.quoteChanged(null);
+        }
         firePropertyChange(PROP_QUALIFIER, null, null);
-        useractionlistener.quoteChanged(null);
 }//GEN-LAST:event_rb_NoQuoteActionPerformed
 
     private void rb_DoubleQuoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_DoubleQuoteActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.quoteChanged("\\\"");
+        }
         firePropertyChange(PROP_QUALIFIER, null, '"');
-        useractionlistener.quoteChanged("\\\"");
 }//GEN-LAST:event_rb_DoubleQuoteActionPerformed
 
     private void rb_SingleQuoteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_SingleQuoteActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.quoteChanged("'");
+        }
         firePropertyChange(PROP_QUALIFIER, null, '\'');
-        useractionlistener.quoteChanged("'");
 }//GEN-LAST:event_rb_SingleQuoteActionPerformed
 
     private void rb_SemicolonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_SemicolonActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.separatorChanged(";");
+        }
         firePropertyChange(PROP_DELIMITER, null, ';');
-        useractionlistener.separatorChanged(";");
 }//GEN-LAST:event_rb_SemicolonActionPerformed
 
     private void rb_TabActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_TabActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.separatorChanged("\\t");
+        }
         firePropertyChange(PROP_DELIMITER, null, '\t');
-        useractionlistener.separatorChanged("\\t");
 }//GEN-LAST:event_rb_TabActionPerformed
 
     private void rb_SpaceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_SpaceActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.separatorChanged(" ");
+        }
         firePropertyChange(PROP_DELIMITER, null, ' ');
-        useractionlistener.separatorChanged(" ");
 }//GEN-LAST:event_rb_SpaceActionPerformed
 
     private void rb_CommaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_CommaActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.separatorChanged(",");
+        }
         firePropertyChange(PROP_DELIMITER, null, ',');
-        useractionlistener.separatorChanged(",");
 }//GEN-LAST:event_rb_CommaActionPerformed
 
     private void rowNamesColumnIndexStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rowNamesColumnIndexStateChanged
         int newvalue = (Integer) rowNamesColumnIndex.getValue();
         tableModel.setRowNamesColumnIndex(newvalue - 1);
-        useractionlistener.rowNamesNoChanged(newvalue);
+        if (configPanelEnabled) {
+            useractionlistener.rowNamesNoChanged(newvalue);
+        }
     }//GEN-LAST:event_rowNamesColumnIndexStateChanged
 
-    private void cb_HeaderRowItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cb_HeaderRowItemStateChanged
-        colNamesRowIndex.setEnabled(cb_HeaderRow.isSelected());
-    }//GEN-LAST:event_cb_HeaderRowItemStateChanged
+    private void cb_ColumnNamesItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cb_ColumnNamesItemStateChanged
+        colNamesRowIndex.setEnabled(cb_ColumnNames.isSelected());
+    }//GEN-LAST:event_cb_ColumnNamesItemStateChanged
 
     private void colNamesRowIndexStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_colNamesRowIndexStateChanged
         int newvalue = (Integer) colNamesRowIndex.getValue();
         tableModel.setColumnNamesRowIndex(newvalue - 1); // in the table model index begins with 0 instead of 1
 
         ((SpinnerNumberModel) rowsStart.getModel()).setMinimum(newvalue + 1);
-        useractionlistener.columnNamesRowIndexChanged(newvalue);
+        if (configPanelEnabled) {
+            useractionlistener.columnNamesRowIndexChanged(newvalue);
+        }
     }//GEN-LAST:event_colNamesRowIndexStateChanged
 
     private void rb_OtherDelimiterItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rb_OtherDelimiterItemStateChanged
@@ -892,67 +790,43 @@ public class DataImportPanel extends javax.swing.JPanel {
             rb_Semicolon.setSelected(true);
         } else if (delimiter == '\t') {
             rb_Tab.setSelected(true);
-            useractionlistener.separatorChanged("\\t");
-            return;
         } else if (delimiter == ' ') {
             rb_Space.setSelected(true);
         } else if (!tf_OtherDelimiter.getText().equals("" + delimiter)) {
             tf_OtherDelimiter.setText("" + delimiter);
         }
-        useractionlistener.separatorChanged("" + delimiter);
+        if (configPanelEnabled) {
+            if (delimiter == '\t') {
+                useractionlistener.separatorChanged("\\t");
+            } else {
+                useractionlistener.separatorChanged("" + delimiter);
+            }
+        }
     }
 
     public void setQualifer(char qualifer) {
+        String s_qualifier = null;
         if (qualifer == '"') {
             rb_DoubleQuote.setSelected(true);
-            useractionlistener.quoteChanged("\\\"");
+            s_qualifier = "\\\"";
         } else if (qualifer == '\'') {
             rb_SingleQuote.setSelected(true);
-            useractionlistener.quoteChanged("" + qualifer);
+            s_qualifier = "" + qualifer;
         } else if (qualifer == '\0') {
             rb_NoQuote.setSelected(true);
-            useractionlistener.quoteChanged(null);
         } else {
             if (!tf_otherQuote.getText().equals("" + qualifer)) {
                 tf_otherQuote.setText("" + qualifer);
             }
         }
+
+        if (configPanelEnabled) {
+            useractionlistener.quoteChanged(s_qualifier);
+        }
     }
 
     public String getVariableName() {
         return variablename.getText();
-    }
-
-    public void setRowsStart(int i) {
-        rowsStart.setValue(i);
-    }
-
-    public void setRowsEnd(int i) {
-        rowsEnd.setValue(i);
-    }
-
-    public void setColStart(int i) {
-        colStart.setValue(i);
-    }
-
-    public void setColEnd(int i) {
-        colEnd.setValue(i);
-    }
-
-    public void setCb_RowNames(boolean b) {
-        cb_RowNames.setSelected(b);
-    }
-
-    public void setRowNamesNo(int i) {
-        rowNamesColumnIndex.setValue(i);
-    }
-
-    public void setCb_HeaderRow(boolean b) {
-        cb_HeaderRow.setSelected(b);
-    }
-
-    public void setVariablename(String varname) {
-        variablename.setText(varname);
     }
 
     public void setUseractionlistener(DataImportPanelUserActionListener useractionlistener) {
@@ -967,11 +841,11 @@ public class DataImportPanel extends javax.swing.JPanel {
 
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName() == ImportTableModel.PROP.HASCOLUMNNAMES.name()) {
-                Boolean oldValue = cb_HeaderRow.isSelected();
+                Boolean oldValue = cb_ColumnNames.isSelected();
                 Boolean newValue = (Boolean) evt.getNewValue();
 
                 if (oldValue != newValue) {
-                    cb_HeaderRow.setSelected(newValue);
+                    cb_ColumnNames.setSelected(newValue);
                 }
 
                 if (newValue) {
@@ -979,8 +853,9 @@ public class DataImportPanel extends javax.swing.JPanel {
                 } else {
                     ((SpinnerNumberModel) rowsStart.getModel()).setMinimum(1);
                 }
-
-                useractionlistener.hasRowHeaderChanged(newValue);
+                if (configPanelEnabled) {
+                    useractionlistener.hasColumnNamesChanged(newValue);
+                }
             } else if (evt.getPropertyName() == ImportTableModel.PROP.COLUMNNAMESROWINDEX.name()) {
                 Integer oldValue = (Integer) colNamesRowIndex.getValue();
                 Integer newValue = tableModel.getColumnNamesRowIndex() + 1;
@@ -992,10 +867,31 @@ public class DataImportPanel extends javax.swing.JPanel {
                 Integer oldValue = (Integer) rowsStart.getValue();
                 Integer newValue = (Integer) evt.getNewValue() + 1;
 
+                if (oldValue > newValue) {
+                    table.removeColumnSelectorListener(columnDataTypeListener);
+
+                    for (int columnIndex = 0; columnIndex < tableModel.getColumnCount(); columnIndex++) {
+                        if (tableModel.getColumnClass(columnIndex) == Double.class) {
+                            if (tableModel.containsNonNumeric(columnIndex)) {
+                                try {
+                                    table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), columnIndex);
+                                    columnDataTypeListener.convertToText(new ColumnSelectorEvent<ColumnType>(columnIndex, null, null));
+                                } catch (ColumnSelectorVetoException ex) {
+                                    Logger.getLogger(DataImportPanel.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            }
+                        }
+                    }
+
+                    table.addColumnSelectorListener(columnDataTypeListener);
+                }
+
                 if (oldValue != newValue) {
                     rowsStart.setValue(newValue);
                 }
-                useractionlistener.rowStartChanged(newValue);
+                if (configPanelEnabled) {
+                    useractionlistener.rowStartChanged(newValue);
+                }
             } else if (evt.getPropertyName() == ImportTableModel.PROP.RANGE_ROWEND.name()) {
 
                 Integer oldValue = (Integer) rowsEnd.getValue();
@@ -1006,7 +902,6 @@ public class DataImportPanel extends javax.swing.JPanel {
                     rowsEnd.setValue(newValue);
                     updateEnds = true;
                 }
-//                useractionlistener.rowEndChange(newValue);
             } else if (evt.getPropertyName() == ImportTableModel.PROP.RANGE_COLSTART.name()) {
                 Integer oldValue = (Integer) colStart.getValue();
                 Integer newValue = (Integer) evt.getNewValue() + 1;
@@ -1024,7 +919,6 @@ public class DataImportPanel extends javax.swing.JPanel {
                     colEnd.setValue(newValue);
                     updateEnds = true;
                 }
-//                useractionlistener.colEndChange(newValue);
             } else if (evt.getPropertyName() == ImportTableModel.PROP.HASROWNAMES.name()) {
                 if (cb_RowNames.isSelected() != evt.getNewValue()) {
                     cb_RowNames.setSelected((Boolean) evt.getNewValue());
@@ -1036,7 +930,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                     table.removeColumnSelectorListener(columnDataTypeListener);
                     try {
                         table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), 0);
-                        tableModel.convertToText(0);
+                        columnDataTypeListener.convertToText(new ColumnSelectorEvent<ColumnType>(0, null, null));
                         table.setColumnSelectorEnabled(0, false);
                     } catch (ColumnSelectorVetoException ex) {
                         Logger.getLogger(DataImportPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -1046,8 +940,9 @@ public class DataImportPanel extends javax.swing.JPanel {
                     ((SpinnerNumberModel) colEnd.getModel()).setMaximum(tableModel.getMaxColumnCount());
                     table.setColumnSelectorEnabled(0, true);
                 }
-
-                useractionlistener.hasRowNamesChanged((Boolean) evt.getNewValue());
+                if (configPanelEnabled) {
+                    useractionlistener.hasRowNamesChanged((Boolean) evt.getNewValue());
+                }
             } else if (evt.getPropertyName() == ImportTableModel.PROP.ROWNAMESCOLUMNINDEX.name()) {
                 Integer oldValue = (Integer) rowNamesColumnIndex.getValue();
                 Integer newValue = (Integer) evt.getNewValue() + 1;
@@ -1055,50 +950,223 @@ public class DataImportPanel extends javax.swing.JPanel {
                 if (oldValue != newValue) {
                     rowNamesColumnIndex.setValue(newValue);
                 }
-                useractionlistener.rowNamesNoChanged(newValue);
+                if (configPanelEnabled) {
+                    useractionlistener.rowNamesNoChanged(newValue);
+                }
             }
         }
     }
 
-    private class DummyUserActionListener implements DataImportPanelUserActionListener {
+    private class ColumnTypeListener implements ColumnSelectorListener<ColumnType> {
 
-        public void separatorChanged(String newvalue) {
+        private String[] colClasses;
+        private boolean canceled = false;
+
+        public void columnSelectionChanged(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
+            table.removeColumnSelectorListener(this);
+            canceled = false;
+            try {
+                if (evt.getColumn() == -1) {
+                    if (tableModel.getColumnCount() > 0) {
+                        if (colClasses == null || colClasses.length != tableModel.getColumnCount()) {
+                            colClasses = new String[tableModel.getColumnCount()];
+                        }
+                        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+                            if (tableModel.getColumnClass(i) == Double.class) {
+                                table.setColumnSelectorOption(ColumnType.NUMERIC.toString(), i);
+                                colClasses[i] = ColumnType.NUMERIC.toString().toLowerCase();
+                            } else if (tableModel.getColumnClass(i) == String.class) {
+                                table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), i);
+                                colClasses[i] = ColumnType.CHARACTER.toString().toLowerCase();
+                            } else if (tableModel.getColumnClass(i) == RDate.class) {
+                                table.setColumnSelectorOption(ColumnType.DATE.toString(), i);
+                                colClasses[i] = ColumnType.DATE.toString();
+                            } else if (tableModel.getColumnClass(i) == RPOSIXct.class) {
+                                table.setColumnSelectorOption(ColumnType.POSIXCT.toString(), i);
+                                colClasses[i] = ColumnType.POSIXCT.toString();
+                            }
+                        }
+                    }
+                } else if (evt.getNewValue().getObject() == ColumnType.CHARACTER) {
+                    if (evt.getOldValue().getObject() != ColumnType.FACTOR) {
+                        convertToText(evt);
+                    }
+                    colClasses[evt.getColumn()] = ColumnType.CHARACTER.toString().toLowerCase();
+                    useractionlistener.colClassChanged(evt.getColumn(), colClasses[evt.getColumn()]);
+                    callColClassesChanged();
+                } else if (evt.getNewValue().getObject() == ColumnType.FACTOR) {
+                    if (evt.getOldValue().getObject() != ColumnType.CHARACTER) {
+                        convertToText(evt);
+                    }
+                    colClasses[evt.getColumn()] = ColumnType.FACTOR.toString().toLowerCase();
+                    useractionlistener.colClassChanged(evt.getColumn(), colClasses[evt.getColumn()]);
+                    callColClassesChanged();
+                } else if (evt.getNewValue().getObject() == ColumnType.NUMERIC) {
+                    convertToNumeric(evt);
+                    useractionlistener.colClassChanged(evt.getColumn(), colClasses[evt.getColumn()]);
+                } else if (evt.getNewValue().getObject() == ColumnType.DATE) {
+                    convertToDate(evt);
+                    useractionlistener.colClassChanged(evt.getColumn(), colClasses[evt.getColumn()]);
+                } else if (evt.getNewValue().getObject() == ColumnType.POSIXCT) {
+                    convertToPOSIXct(evt);
+                    useractionlistener.colClassChanged(evt.getColumn(), colClasses[evt.getColumn()]);
+                }
+            } finally {
+                table.addColumnSelectorListener(this);
+            }
         }
 
-        public void quoteChanged(String newvalue) {
+        private void convertToText(final ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
+            final JDialog dialog = new JDialog((JFrame) DataImportPanel.this.getTopLevelAncestor(), true);
+
+            SwingWorker<List<String>, Object> worker = new SwingWorker<List<String>, Object>() {
+
+                @Override
+                protected List<String> doInBackground() throws Exception {
+                    return tableModelHelper.getColumnData(evt.getColumn());
+                }
+
+                @Override
+                protected void done() {
+                    dialog.setVisible(false);
+                }
+            };
+
+            worker.execute();
+
+            try {
+                worker.get(1, TimeUnit.SECONDS);
+            } catch (TimeoutException timeoutException) {
+                JPanel p = new JPanel(new MigLayout("align center,fillx", "[250]10[]", "[80]"));
+                JProgressBar pb = new JProgressBar();
+                pb.setIndeterminate(true);
+                pb.setString("Rereading the column. Please wait...");
+                pb.setStringPainted(true);
+                p.add(pb);
+
+                JButton jb = new JButton("Cancel");
+                jb.addActionListener(new ActionListener() {
+
+                    public void actionPerformed(ActionEvent e) {
+                        canceled = true;
+                        dialog.setVisible(false);
+                    }
+                });
+                p.add(jb);
+
+                dialog.setContentPane(p);
+                dialog.setSize(p.getPreferredSize());
+                dialog.setLocationRelativeTo(DataImportPanel.this);
+                dialog.setVisible(true);
+            } catch (Exception ex) {
+                throw new ColumnSelectorVetoException(ex);
+            }
+
+            try {
+                if (!canceled) {
+                    tableModel.convertToText(evt.getColumn(), worker.get());
+                }
+            } catch (Exception ex) {
+                throw new ColumnSelectorVetoException(ex);
+            }
         }
 
-        public void rowStartChanged(int newvalue) {
+        private void convertToNumeric(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
+            try {
+                tableModel.convertToNumeric(evt.getColumn());
+                colClasses[evt.getColumn()] = ColumnType.NUMERIC.toString().toLowerCase();
+                callColClassesChanged();
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(DataImportPanel.this, ex.getMessage());
+                throw new ColumnSelectorVetoException(ex);
+            }
         }
 
-        public void rowEndChange(int newvalue) {
+        private void convertToDate(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
+            try {
+                tableModel.convertToDate(evt.getColumn(), RUtil.parseDatePattern);
+                colClasses[evt.getColumn()] = ColumnType.DATE.toString();
+                callColClassesChanged();
+            } catch (Exception ex) {
+                StringBuilder errmsg = new StringBuilder("Could not parse to Date using the following formats:\n");
+
+                for (String rformat : RUtil.parseDatePatternInRFormat) {
+                    errmsg.append(rformat).append('\n');
+                }
+
+                errmsg.append(ex.getMessage()).append("\n Would you like to set the Date pattern below (system default proposed) and try again?");
+
+                String pattern = (String) JOptionPane.showInputDialog(
+                        DataImportPanel.this,
+                        errmsg,
+                        "Date Format",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        RUtil.defaultDatePatternInRFormat);
+                //If a string was returned
+                if ((pattern != null) && (pattern.length() > 0)) {
+                    try {
+                        tableModel.convertToDate(evt.getColumn(), new String[]{RUtil.convertPatternFromRFormat(pattern)});
+                        colClasses[evt.getColumn()] = ColumnType.DATE.toString() + "=" + pattern;
+                        callColClassesChanged();
+                    } catch (Exception ex1) {
+                        errmsg = new StringBuilder("Could not parse to Date using the following format:\n").append(pattern).append('\n').append(ex1.getMessage());
+                        JOptionPane.showMessageDialog(DataImportPanel.this, errmsg);
+                        throw new ColumnSelectorVetoException(ex1);
+                    }
+                } else {
+                    throw new ColumnSelectorVetoException(ex);
+                }
+            }
         }
 
-        public void colStartChanged(int newvalue) {
+        private void convertToPOSIXct(ColumnSelectorEvent<ColumnType> evt) throws ColumnSelectorVetoException {
+            try {
+                tableModel.convertToPOSIXct(evt.getColumn(), RUtil.parsePOSIXctPattern);
+                colClasses[evt.getColumn()] = ColumnType.POSIXCT.toString();
+                callColClassesChanged();
+            } catch (Exception ex) {
+                StringBuilder errmsg = new StringBuilder("Could not parse to POSIXct using the following formats:\n");
+
+                for (String rformat : RUtil.parsePOSIXctPatternInRFormat) {
+                    errmsg.append(rformat).append('\n');
+                }
+
+                errmsg.append(ex.getMessage()).append("\n Would you like to set the Date pattern below (system default proposed) and try again?");
+
+                String pattern = (String) JOptionPane.showInputDialog(
+                        DataImportPanel.this,
+                        errmsg,
+                        "POSIXct Format",
+                        JOptionPane.QUESTION_MESSAGE,
+                        null,
+                        null,
+                        RUtil.defaultPOSIXctPatternInRFormat);
+                //If a string was returned
+                if ((pattern != null) && (pattern.length() > 0)) {
+                    try {
+                        tableModel.convertToPOSIXct(evt.getColumn(), new String[]{RUtil.convertPatternFromRFormat(pattern)});
+                        colClasses[evt.getColumn()] = ColumnType.POSIXCT.toString() + "=" + pattern;
+                        callColClassesChanged();
+                    } catch (Exception ex1) {
+                        errmsg = new StringBuilder("Could not parse to POSIXct using the following format:\n").append(pattern).append('\n').append(ex1.getMessage());
+
+                        JOptionPane.showMessageDialog(DataImportPanel.this, errmsg);
+                        throw new ColumnSelectorVetoException(ex1);
+                    }
+                } else {
+                    throw new ColumnSelectorVetoException(ex);
+                }
+            }
         }
 
-        public void colEndChange(int newvalue) {
-        }
-
-        public void hasRowHeaderChanged(Boolean newvalue) {
-        }
-
-        public void hasRowNamesChanged(Boolean newvalue) {
-        }
-
-        public void rowNamesNoChanged(int newvalue) {
-        }
-
-        public void variableNameChanged(String newvalue) {
-        }
-
-        public void columnNamesRowIndexChanged(int newvalue) {
-        }
-
-        public void tableCellValueChanged(Object aValue, int rowIndex, int columnIndex) {
-        }
-
-        public void colClassesChanged(String[] classes) {
+        private void callColClassesChanged() {
+            if (tableModel.hasRowNames()) {
+                useractionlistener.colClassesChanged(Arrays.copyOfRange(colClasses, 1, colClasses.length));
+            } else {
+                useractionlistener.colClassesChanged(colClasses);
+            }
         }
     }
 
@@ -1144,7 +1212,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox cb_HeaderRow;
+    private javax.swing.JCheckBox cb_ColumnNames;
     private javax.swing.JCheckBox cb_RowNames;
     private javax.swing.JSpinner colEnd;
     private javax.swing.JSpinner colNamesRowIndex;
@@ -1181,4 +1249,49 @@ public class DataImportPanel extends javax.swing.JPanel {
     private javax.swing.JTextField tf_otherQuote;
     private javax.swing.JTextField variablename;
     // End of variables declaration//GEN-END:variables
+
+    private class DummyUserActionListener implements DataImportPanelUserActionListener {
+
+        public void separatorChanged(String newvalue) {
+        }
+
+        public void quoteChanged(String newvalue) {
+        }
+
+        public void rowStartChanged(int newvalue) {
+        }
+
+        public void rowEndChange(int newvalue) {
+        }
+
+        public void colStartChanged(int newvalue) {
+        }
+
+        public void colEndChange(int newvalue) {
+        }
+
+        public void hasColumnNamesChanged(Boolean newvalue) {
+        }
+
+        public void hasRowNamesChanged(Boolean newvalue) {
+        }
+
+        public void rowNamesNoChanged(int newvalue) {
+        }
+
+        public void variableNameChanged(String newvalue) {
+        }
+
+        public void columnNamesRowIndexChanged(int newvalue) {
+        }
+
+        public void tableCellValueChanged(Object aValue, int rowIndex, int columnIndex) {
+        }
+
+        public void colClassesChanged(String[] classes) {
+        }
+
+        public void colClassChanged(int columnIndex, String clazz) {
+        }
+    }
 }

@@ -3,6 +3,7 @@ package at.ac.ait.speedr.importany;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanel;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanel.ColumnType;
 import at.ac.ait.speedr.importwizard.steps.ImportTableModel;
+import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
 import at.ac.ait.speedr.workspace.RConnection;
 import at.ac.ait.speedr.workspace.RUtil;
 import at.ac.arcs.tablefilter.ARCTable;
@@ -41,6 +42,7 @@ import org.xml.sax.SAXException;
 public class ImporterAnyFunction {
 
     private static final Logger logger = Logger.getLogger(ImporterAnyFunction.class.getName());
+    private static ImportTableModelHelper modelhelper;
 
     public static void importany(String file, Integer rowstart, Integer rowend, Integer colstart, Integer colend,
             Boolean hasRowNames, Integer rowNamesColumnIndex, Boolean hasColumnNames,
@@ -58,6 +60,7 @@ public class ImporterAnyFunction {
         logger.log(Level.INFO, "file: {0}", file);
 
         ImportTableModel model = null;
+        modelhelper = new ImportTableModelHelper();
         try {
             if (fileExtension.equals("xlsx")) {
                 model = readXLSX(new File(file), ',', '"');
@@ -134,6 +137,8 @@ public class ImporterAnyFunction {
         int i = 0;
         if (model.hasRowNames()) {
             i = 1;
+            table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER.toString(), i);
+            model.convertToText(i, modelhelper.getColumnData(i));
         }
 
         for (int j = 0; i < model.getColumnCount(); i++, j++) {
@@ -142,10 +147,10 @@ public class ImporterAnyFunction {
                 model.convertToNumeric(i);
             } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.CHARACTER.toString())) {
                 table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER.toString(), i);
-                model.convertToText(i);
+                model.convertToText(i, modelhelper.getColumnData(i));
             } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.FACTOR.toString())) {
                 table.setColumnSelectorOption(DataImportPanel.ColumnType.FACTOR.toString(), i);
-                model.convertToText(i);
+                model.convertToText(i, modelhelper.getColumnData(i));
             } else if (columnClasses[j].contains(DataImportPanel.ColumnType.DATE.toString())) {
                 table.setColumnSelectorOption(DataImportPanel.ColumnType.DATE.toString(), i);
                 if (columnClasses[j].contains("=")) {
@@ -270,9 +275,13 @@ public class ImporterAnyFunction {
                 new CSVReader(new InputStreamReader(in), separator, quote);
 
         String[] next;
+        int line = 0;
         while ((next = csvReader.readNext()) != null) {
             rows.add(next);
+            modelhelper.saveRowDataSet(line, next);
+            line++;
         }
+        modelhelper.close();
 
         ImportTableModel model = new ImportTableModel();
 

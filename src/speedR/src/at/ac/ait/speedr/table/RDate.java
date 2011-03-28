@@ -1,5 +1,6 @@
 package at.ac.ait.speedr.table;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -8,6 +9,7 @@ import java.util.Date;
  */
 public class RDate extends java.util.Date{
 
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
     private long day;
 
     public RDate(long day) {
@@ -22,5 +24,10 @@ public class RDate extends java.util.Date{
 
     public long getDateDay(){
         return day;
+    }
+
+    @Override
+    public String toString() {
+        return "as.Date(\"" + sdf.format(this) +"\")";
     }
 }

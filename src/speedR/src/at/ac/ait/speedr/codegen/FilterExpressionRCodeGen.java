@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:45:30 E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g 2011-03-15 16:13:05
+// $ANTLR 3.3 Nov 30, 2010 12:45:30 E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g 2011-03-23 10:47:45
  
 package at.ac.ait.speedr.codegen; 
 
@@ -177,7 +177,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
     };
 
     // $ANTLR start "predicate"
-    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:50:1: predicate : ( ^( OR a= predicate b= predicate ) -> or(a=$a.stb=$b.st) | ^( AND a= predicate b= predicate ) -> and(a=$a.stb=$b.st) | ^( NOT p= predicate ) -> not(a=$p.st) | 'is.na' -> isna(colIndex=col) | 'is.null' -> isna(colIndex=col) | ^( '=' number ) -> {isDataframe}? equal(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> equal(colIndex=cola=$number.text) | ^( '<' number ) -> {isDataframe}? less(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> less(colIndex=cola=$number.text) | ^( '<=' number ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$number.text) | ^( '>' number ) -> {isDataframe}? greater(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greater(colIndex=cola=$number.text) | ^( '>=' number ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$number.text) | ^( '=' date ) -> {isDataframe}? equal(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> equal(colIndex=cola=$date.st) | ^( '=' time ) -> {isDataframe}? equal(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> equal(colIndex=cola=$time.st) | ^( '<' date ) -> {isDataframe}? less(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> less(colIndex=cola=$date.st) | ^( '<' time ) -> {isDataframe}? less(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> less(colIndex=cola=$time.st) | ^( '<=' date ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$date.st) | ^( '<=' time ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$time.st) | ^( '>' date ) -> {isDataframe}? greater(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greater(colIndex=cola=$date.st) | ^( '>' time ) -> {isDataframe}? greater(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greater(colIndex=cola=$time.st) | ^( '>=' date ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$date.st) | ^( '>=' time ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$time.st) | ^( 'contains' e= STRING_LITERAL ) -> {hasRowNames}? contains_rownames(rownamesindex=coltext=$e.text) -> contains(colIndex=coltext=$e.text) | ^( 'equals' ( TO )? e= STRING_LITERAL ) -> {hasRowNames}? equal_rownames(rownamesindex=coltext=$e.text) -> equal(colIndex=cola=$e.text));
+    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:50:1: predicate : ( ^( OR a= predicate b= predicate ) -> or(a=$a.stb=$b.st) | ^( AND a= predicate b= predicate ) -> and(a=$a.stb=$b.st) | ^( NOT p= predicate ) -> not(a=$p.st) | 'is.na' -> isna(colIndex=col) | 'is.null' -> isna(colIndex=col) | ^( '=' number ) -> {isDataframe}? equal(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> equal(colIndex=cola=$number.text) | ^( '<' number ) -> {isDataframe}? less(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> less(colIndex=cola=$number.text) | ^( '<=' number ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$number.text) | ^( '>' number ) -> {isDataframe}? greater(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greater(colIndex=cola=$number.text) | ^( '>=' number ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$number.text) | ^( '=' date ) -> {isDataframe}? equal(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> equal(colIndex=cola=$date.st) | ^( '=' time ) -> {isDataframe}? equal(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> equal(colIndex=cola=$time.st) | ^( '<' date ) -> {isDataframe}? less(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> less(colIndex=cola=$date.st) | ^( '<' time ) -> {isDataframe}? less(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> less(colIndex=cola=$time.st) | ^( '<=' date ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$date.st) | ^( '<=' time ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$time.st) | ^( '>' date ) -> {isDataframe}? greater(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greater(colIndex=cola=$date.st) | ^( '>' time ) -> {isDataframe}? greater(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greater(colIndex=cola=$time.st) | ^( '>=' date ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$date.st) | ^( '>=' time ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$time.st) | ^( 'contains' e= STRING_LITERAL ) -> {hasRowNames}? contains_rownames(rownamesindex=coltext=$e.text) -> contains(colIndex=coltext=$e.text) | ^( 'equals' ( TO )? e= STRING_LITERAL ) -> {hasRowNames}? equal_rownames(rownamesindex=coltext=$e.text) -> {isDataframe}? equal(colIndex=dataframecola=$e.textisdataframe=isDataframe) -> equal(colIndex=cola=$e.text));
     public final FilterExpressionRCodeGen.predicate_return predicate() throws RecognitionException {
         FilterExpressionRCodeGen.predicate_return retval = new FilterExpressionRCodeGen.predicate_return();
         retval.start = input.LT(1);
@@ -221,7 +221,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
 
 
         try {
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:50:10: ( ^( OR a= predicate b= predicate ) -> or(a=$a.stb=$b.st) | ^( AND a= predicate b= predicate ) -> and(a=$a.stb=$b.st) | ^( NOT p= predicate ) -> not(a=$p.st) | 'is.na' -> isna(colIndex=col) | 'is.null' -> isna(colIndex=col) | ^( '=' number ) -> {isDataframe}? equal(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> equal(colIndex=cola=$number.text) | ^( '<' number ) -> {isDataframe}? less(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> less(colIndex=cola=$number.text) | ^( '<=' number ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$number.text) | ^( '>' number ) -> {isDataframe}? greater(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greater(colIndex=cola=$number.text) | ^( '>=' number ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$number.text) | ^( '=' date ) -> {isDataframe}? equal(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> equal(colIndex=cola=$date.st) | ^( '=' time ) -> {isDataframe}? equal(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> equal(colIndex=cola=$time.st) | ^( '<' date ) -> {isDataframe}? less(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> less(colIndex=cola=$date.st) | ^( '<' time ) -> {isDataframe}? less(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> less(colIndex=cola=$time.st) | ^( '<=' date ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$date.st) | ^( '<=' time ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$time.st) | ^( '>' date ) -> {isDataframe}? greater(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greater(colIndex=cola=$date.st) | ^( '>' time ) -> {isDataframe}? greater(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greater(colIndex=cola=$time.st) | ^( '>=' date ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$date.st) | ^( '>=' time ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$time.st) | ^( 'contains' e= STRING_LITERAL ) -> {hasRowNames}? contains_rownames(rownamesindex=coltext=$e.text) -> contains(colIndex=coltext=$e.text) | ^( 'equals' ( TO )? e= STRING_LITERAL ) -> {hasRowNames}? equal_rownames(rownamesindex=coltext=$e.text) -> equal(colIndex=cola=$e.text))
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:50:10: ( ^( OR a= predicate b= predicate ) -> or(a=$a.stb=$b.st) | ^( AND a= predicate b= predicate ) -> and(a=$a.stb=$b.st) | ^( NOT p= predicate ) -> not(a=$p.st) | 'is.na' -> isna(colIndex=col) | 'is.null' -> isna(colIndex=col) | ^( '=' number ) -> {isDataframe}? equal(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> equal(colIndex=cola=$number.text) | ^( '<' number ) -> {isDataframe}? less(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> less(colIndex=cola=$number.text) | ^( '<=' number ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$number.text) | ^( '>' number ) -> {isDataframe}? greater(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greater(colIndex=cola=$number.text) | ^( '>=' number ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$number.text) | ^( '=' date ) -> {isDataframe}? equal(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> equal(colIndex=cola=$date.st) | ^( '=' time ) -> {isDataframe}? equal(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> equal(colIndex=cola=$time.st) | ^( '<' date ) -> {isDataframe}? less(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> less(colIndex=cola=$date.st) | ^( '<' time ) -> {isDataframe}? less(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> less(colIndex=cola=$time.st) | ^( '<=' date ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$date.st) | ^( '<=' time ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$time.st) | ^( '>' date ) -> {isDataframe}? greater(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greater(colIndex=cola=$date.st) | ^( '>' time ) -> {isDataframe}? greater(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greater(colIndex=cola=$time.st) | ^( '>=' date ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$date.st) | ^( '>=' time ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$time.st) | ^( 'contains' e= STRING_LITERAL ) -> {hasRowNames}? contains_rownames(rownamesindex=coltext=$e.text) -> contains(colIndex=coltext=$e.text) | ^( 'equals' ( TO )? e= STRING_LITERAL ) -> {hasRowNames}? equal_rownames(rownamesindex=coltext=$e.text) -> {isDataframe}? equal(colIndex=dataframecola=$e.textisdataframe=isDataframe) -> equal(colIndex=cola=$e.text))
             int alt2=22;
             alt2 = dfa2.predict(input);
             switch (alt2) {
@@ -829,7 +829,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
                         retval.st = templateLib.getInstanceOf("contains_rownames",
                       new STAttrMap().put("rownamesindex", col).put("text", (e!=null?e.getText():null)));
                     }
-                    else // 97:7: -> contains(colIndex=coltext=$e.text)
+                    else // 97:48: -> contains(colIndex=coltext=$e.text)
                     {
                         retval.st = templateLib.getInstanceOf("contains",
                       new STAttrMap().put("colIndex", col).put("text", (e!=null?e.getText():null)));
@@ -841,7 +841,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
                 case 22 :
                     // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:98:5: ^( 'equals' ( TO )? e= STRING_LITERAL )
                     {
-                    match(input,29,FOLLOW_29_in_predicate1081); 
+                    match(input,29,FOLLOW_29_in_predicate1122); 
 
                     match(input, Token.DOWN, null); 
                     // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:98:17: ( TO )?
@@ -855,14 +855,14 @@ public class FilterExpressionRCodeGen extends TreeParser {
                         case 1 :
                             // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:98:17: TO
                             {
-                            match(input,TO,FOLLOW_TO_in_predicate1084); 
+                            match(input,TO,FOLLOW_TO_in_predicate1125); 
 
                             }
                             break;
 
                     }
 
-                    e=(CommonTree)match(input,STRING_LITERAL,FOLLOW_STRING_LITERAL_in_predicate1089); 
+                    e=(CommonTree)match(input,STRING_LITERAL,FOLLOW_STRING_LITERAL_in_predicate1130); 
 
                     match(input, Token.UP, null); 
 
@@ -873,7 +873,12 @@ public class FilterExpressionRCodeGen extends TreeParser {
                         retval.st = templateLib.getInstanceOf("equal_rownames",
                       new STAttrMap().put("rownamesindex", col).put("text", (e!=null?e.getText():null)));
                     }
-                    else // 99:9: -> equal(colIndex=cola=$e.text)
+                    else // 99:51: -> {isDataframe}? equal(colIndex=dataframecola=$e.textisdataframe=isDataframe)
+                    if (isDataframe) {
+                        retval.st = templateLib.getInstanceOf("equal",
+                      new STAttrMap().put("colIndex", dataframecol).put("a", (e!=null?e.getText():null)).put("isdataframe", isDataframe));
+                    }
+                    else // 100:9: -> equal(colIndex=cola=$e.text)
                     {
                         retval.st = templateLib.getInstanceOf("equal",
                       new STAttrMap().put("colIndex", col).put("a", (e!=null?e.getText():null)));
@@ -902,13 +907,13 @@ public class FilterExpressionRCodeGen extends TreeParser {
     };
 
     // $ANTLR start "number"
-    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:102:1: number : ( SIGNEDINTEGER | INTEGER | FLOAT );
+    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:103:1: number : ( SIGNEDINTEGER | INTEGER | FLOAT );
     public final FilterExpressionRCodeGen.number_return number() throws RecognitionException {
         FilterExpressionRCodeGen.number_return retval = new FilterExpressionRCodeGen.number_return();
         retval.start = input.LT(1);
 
         try {
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:102:9: ( SIGNEDINTEGER | INTEGER | FLOAT )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:103:9: ( SIGNEDINTEGER | INTEGER | FLOAT )
             // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:
             {
             if ( (input.LA(1)>=INTEGER && input.LA(1)<=FLOAT) ) {
@@ -941,7 +946,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
     };
 
     // $ANTLR start "time"
-    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:1: time : ^( TIME ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) (hour= INTEGER | hour= DATENUM ) (minute= INTEGER | minute= DATENUM ) (second= INTEGER | second= DATENUM ) ) -> time(year=$year.textmonth=$month.textday=$day.texthour=$hour.textminute=$minute.textsecond=$second.text);
+    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:1: time : ^( TIME ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) (hour= INTEGER | hour= DATENUM ) (minute= INTEGER | minute= DATENUM ) (second= INTEGER | second= DATENUM ) ) -> time(year=$year.textmonth=$month.textday=$day.texthour=$hour.textminute=$minute.textsecond=$second.text);
     public final FilterExpressionRCodeGen.time_return time() throws RecognitionException {
         FilterExpressionRCodeGen.time_return retval = new FilterExpressionRCodeGen.time_return();
         retval.start = input.LT(1);
@@ -954,16 +959,16 @@ public class FilterExpressionRCodeGen extends TreeParser {
         CommonTree second=null;
 
         try {
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:6: ( ^( TIME ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) (hour= INTEGER | hour= DATENUM ) (minute= INTEGER | minute= DATENUM ) (second= INTEGER | second= DATENUM ) ) -> time(year=$year.textmonth=$month.textday=$day.texthour=$hour.textminute=$minute.textsecond=$second.text))
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:8: ^( TIME ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) (hour= INTEGER | hour= DATENUM ) (minute= INTEGER | minute= DATENUM ) (second= INTEGER | second= DATENUM ) )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:6: ( ^( TIME ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) (hour= INTEGER | hour= DATENUM ) (minute= INTEGER | minute= DATENUM ) (second= INTEGER | second= DATENUM ) ) -> time(year=$year.textmonth=$month.textday=$day.texthour=$hour.textminute=$minute.textsecond=$second.text))
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:8: ^( TIME ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) (hour= INTEGER | hour= DATENUM ) (minute= INTEGER | minute= DATENUM ) (second= INTEGER | second= DATENUM ) )
             {
-            match(input,TIME,FOLLOW_TIME_in_time1159); 
+            match(input,TIME,FOLLOW_TIME_in_time1269); 
 
             match(input, Token.DOWN, null); 
-            match(input,DATE,FOLLOW_DATE_in_time1162); 
+            match(input,DATE,FOLLOW_DATE_in_time1272); 
 
             match(input, Token.DOWN, null); 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:22: (year= INTEGER | year= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:22: (year= INTEGER | year= DATENUM )
             int alt3=2;
             int LA3_0 = input.LA(1);
 
@@ -981,23 +986,23 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt3) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:23: year= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:23: year= INTEGER
                     {
-                    year=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1167); 
+                    year=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1277); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:38: year= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:38: year= DATENUM
                     {
-                    year=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1173); 
+                    year=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1283); 
 
                     }
                     break;
 
             }
 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:52: (month= INTEGER | month= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:52: (month= INTEGER | month= DATENUM )
             int alt4=2;
             int LA4_0 = input.LA(1);
 
@@ -1015,23 +1020,23 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt4) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:53: month= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:53: month= INTEGER
                     {
-                    month=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1179); 
+                    month=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1289); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:69: month= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:69: month= DATENUM
                     {
-                    month=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1185); 
+                    month=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1295); 
 
                     }
                     break;
 
             }
 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:84: (day= INTEGER | day= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:84: (day= INTEGER | day= DATENUM )
             int alt5=2;
             int LA5_0 = input.LA(1);
 
@@ -1049,16 +1054,16 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt5) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:85: day= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:85: day= INTEGER
                     {
-                    day=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1191); 
+                    day=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1301); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:99: day= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:99: day= DATENUM
                     {
-                    day=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1197); 
+                    day=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1307); 
 
                     }
                     break;
@@ -1067,7 +1072,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
 
 
             match(input, Token.UP, null); 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:113: (hour= INTEGER | hour= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:113: (hour= INTEGER | hour= DATENUM )
             int alt6=2;
             int LA6_0 = input.LA(1);
 
@@ -1085,23 +1090,23 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt6) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:114: hour= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:114: hour= INTEGER
                     {
-                    hour=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1204); 
+                    hour=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1314); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:129: hour= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:129: hour= DATENUM
                     {
-                    hour=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1210); 
+                    hour=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1320); 
 
                     }
                     break;
 
             }
 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:143: (minute= INTEGER | minute= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:143: (minute= INTEGER | minute= DATENUM )
             int alt7=2;
             int LA7_0 = input.LA(1);
 
@@ -1119,23 +1124,23 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt7) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:144: minute= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:144: minute= INTEGER
                     {
-                    minute=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1216); 
+                    minute=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1326); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:161: minute= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:161: minute= DATENUM
                     {
-                    minute=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1222); 
+                    minute=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1332); 
 
                     }
                     break;
 
             }
 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:177: (second= INTEGER | second= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:177: (second= INTEGER | second= DATENUM )
             int alt8=2;
             int LA8_0 = input.LA(1);
 
@@ -1153,16 +1158,16 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt8) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:178: second= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:178: second= INTEGER
                     {
-                    second=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1228); 
+                    second=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_time1338); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:107:195: second= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:108:195: second= DATENUM
                     {
-                    second=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1234); 
+                    second=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_time1344); 
 
                     }
                     break;
@@ -1174,7 +1179,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
 
 
             // TEMPLATE REWRITE
-            // 107:212: -> time(year=$year.textmonth=$month.textday=$day.texthour=$hour.textminute=$minute.textsecond=$second.text)
+            // 108:212: -> time(year=$year.textmonth=$month.textday=$day.texthour=$hour.textminute=$minute.textsecond=$second.text)
             {
                 retval.st = templateLib.getInstanceOf("time",
               new STAttrMap().put("year", (year!=null?year.getText():null)).put("month", (month!=null?month.getText():null)).put("day", (day!=null?day.getText():null)).put("hour", (hour!=null?hour.getText():null)).put("minute", (minute!=null?minute.getText():null)).put("second", (second!=null?second.getText():null)));
@@ -1201,7 +1206,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
     };
 
     // $ANTLR start "date"
-    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:1: date : ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) -> {!isPOSIXct}? date(year=$year.textmonth=$month.textday=$day.text) -> time(year=$year.textmonth=$month.textday=$day.texthour=nullminute=nullsecond=null);
+    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:1: date : ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) -> {!isPOSIXct}? date(year=$year.textmonth=$month.textday=$day.text) -> time(year=$year.textmonth=$month.textday=$day.texthour=nullminute=nullsecond=null);
     public final FilterExpressionRCodeGen.date_return date() throws RecognitionException {
         FilterExpressionRCodeGen.date_return retval = new FilterExpressionRCodeGen.date_return();
         retval.start = input.LT(1);
@@ -1211,13 +1216,13 @@ public class FilterExpressionRCodeGen extends TreeParser {
         CommonTree day=null;
 
         try {
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:6: ( ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) -> {!isPOSIXct}? date(year=$year.textmonth=$month.textday=$day.text) -> time(year=$year.textmonth=$month.textday=$day.texthour=nullminute=nullsecond=null))
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:8: ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:6: ( ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) ) -> {!isPOSIXct}? date(year=$year.textmonth=$month.textday=$day.text) -> time(year=$year.textmonth=$month.textday=$day.texthour=nullminute=nullsecond=null))
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:8: ^( DATE (year= INTEGER | year= DATENUM ) (month= INTEGER | month= DATENUM ) (day= INTEGER | day= DATENUM ) )
             {
-            match(input,DATE,FOLLOW_DATE_in_date1274); 
+            match(input,DATE,FOLLOW_DATE_in_date1384); 
 
             match(input, Token.DOWN, null); 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:15: (year= INTEGER | year= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:15: (year= INTEGER | year= DATENUM )
             int alt9=2;
             int LA9_0 = input.LA(1);
 
@@ -1235,23 +1240,23 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt9) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:16: year= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:16: year= INTEGER
                     {
-                    year=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_date1279); 
+                    year=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_date1389); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:31: year= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:31: year= DATENUM
                     {
-                    year=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_date1285); 
+                    year=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_date1395); 
 
                     }
                     break;
 
             }
 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:45: (month= INTEGER | month= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:45: (month= INTEGER | month= DATENUM )
             int alt10=2;
             int LA10_0 = input.LA(1);
 
@@ -1269,23 +1274,23 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt10) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:46: month= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:46: month= INTEGER
                     {
-                    month=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_date1291); 
+                    month=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_date1401); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:62: month= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:62: month= DATENUM
                     {
-                    month=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_date1297); 
+                    month=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_date1407); 
 
                     }
                     break;
 
             }
 
-            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:77: (day= INTEGER | day= DATENUM )
+            // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:77: (day= INTEGER | day= DATENUM )
             int alt11=2;
             int LA11_0 = input.LA(1);
 
@@ -1303,16 +1308,16 @@ public class FilterExpressionRCodeGen extends TreeParser {
             }
             switch (alt11) {
                 case 1 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:78: day= INTEGER
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:78: day= INTEGER
                     {
-                    day=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_date1303); 
+                    day=(CommonTree)match(input,INTEGER,FOLLOW_INTEGER_in_date1413); 
 
                     }
                     break;
                 case 2 :
-                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:109:92: day= DATENUM
+                    // E:\\projects\\r-forge\\speedR\\src\\speedR\\src\\at\\ac\\ait\\speedr\\codegen\\FilterExpressionRCodeGen.g:110:92: day= DATENUM
                     {
-                    day=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_date1309); 
+                    day=(CommonTree)match(input,DATENUM,FOLLOW_DATENUM_in_date1419); 
 
                     }
                     break;
@@ -1324,12 +1329,12 @@ public class FilterExpressionRCodeGen extends TreeParser {
 
 
             // TEMPLATE REWRITE
-            // 109:106: -> {!isPOSIXct}? date(year=$year.textmonth=$month.textday=$day.text)
+            // 110:106: -> {!isPOSIXct}? date(year=$year.textmonth=$month.textday=$day.text)
             if (!isPOSIXct) {
                 retval.st = templateLib.getInstanceOf("date",
               new STAttrMap().put("year", (year!=null?year.getText():null)).put("month", (month!=null?month.getText():null)).put("day", (day!=null?day.getText():null)));
             }
-            else // 110:18: -> time(year=$year.textmonth=$month.textday=$day.texthour=nullminute=nullsecond=null)
+            else // 111:18: -> time(year=$year.textmonth=$month.textday=$day.texthour=nullminute=nullsecond=null)
             {
                 retval.st = templateLib.getInstanceOf("time",
               new STAttrMap().put("year", (year!=null?year.getText():null)).put("month", (month!=null?month.getText():null)).put("day", (day!=null?day.getText():null)).put("hour", null).put("minute", null).put("second", null));
@@ -1433,7 +1438,7 @@ public class FilterExpressionRCodeGen extends TreeParser {
             this.transition = DFA2_transition;
         }
         public String getDescription() {
-            return "50:1: predicate : ( ^( OR a= predicate b= predicate ) -> or(a=$a.stb=$b.st) | ^( AND a= predicate b= predicate ) -> and(a=$a.stb=$b.st) | ^( NOT p= predicate ) -> not(a=$p.st) | 'is.na' -> isna(colIndex=col) | 'is.null' -> isna(colIndex=col) | ^( '=' number ) -> {isDataframe}? equal(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> equal(colIndex=cola=$number.text) | ^( '<' number ) -> {isDataframe}? less(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> less(colIndex=cola=$number.text) | ^( '<=' number ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$number.text) | ^( '>' number ) -> {isDataframe}? greater(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greater(colIndex=cola=$number.text) | ^( '>=' number ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$number.text) | ^( '=' date ) -> {isDataframe}? equal(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> equal(colIndex=cola=$date.st) | ^( '=' time ) -> {isDataframe}? equal(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> equal(colIndex=cola=$time.st) | ^( '<' date ) -> {isDataframe}? less(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> less(colIndex=cola=$date.st) | ^( '<' time ) -> {isDataframe}? less(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> less(colIndex=cola=$time.st) | ^( '<=' date ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$date.st) | ^( '<=' time ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$time.st) | ^( '>' date ) -> {isDataframe}? greater(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greater(colIndex=cola=$date.st) | ^( '>' time ) -> {isDataframe}? greater(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greater(colIndex=cola=$time.st) | ^( '>=' date ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$date.st) | ^( '>=' time ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$time.st) | ^( 'contains' e= STRING_LITERAL ) -> {hasRowNames}? contains_rownames(rownamesindex=coltext=$e.text) -> contains(colIndex=coltext=$e.text) | ^( 'equals' ( TO )? e= STRING_LITERAL ) -> {hasRowNames}? equal_rownames(rownamesindex=coltext=$e.text) -> equal(colIndex=cola=$e.text));";
+            return "50:1: predicate : ( ^( OR a= predicate b= predicate ) -> or(a=$a.stb=$b.st) | ^( AND a= predicate b= predicate ) -> and(a=$a.stb=$b.st) | ^( NOT p= predicate ) -> not(a=$p.st) | 'is.na' -> isna(colIndex=col) | 'is.null' -> isna(colIndex=col) | ^( '=' number ) -> {isDataframe}? equal(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> equal(colIndex=cola=$number.text) | ^( '<' number ) -> {isDataframe}? less(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> less(colIndex=cola=$number.text) | ^( '<=' number ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$number.text) | ^( '>' number ) -> {isDataframe}? greater(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greater(colIndex=cola=$number.text) | ^( '>=' number ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$number.textisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$number.text) | ^( '=' date ) -> {isDataframe}? equal(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> equal(colIndex=cola=$date.st) | ^( '=' time ) -> {isDataframe}? equal(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> equal(colIndex=cola=$time.st) | ^( '<' date ) -> {isDataframe}? less(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> less(colIndex=cola=$date.st) | ^( '<' time ) -> {isDataframe}? less(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> less(colIndex=cola=$time.st) | ^( '<=' date ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$date.st) | ^( '<=' time ) -> {isDataframe}? lessOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> lessOrEqual(colIndex=cola=$time.st) | ^( '>' date ) -> {isDataframe}? greater(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greater(colIndex=cola=$date.st) | ^( '>' time ) -> {isDataframe}? greater(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greater(colIndex=cola=$time.st) | ^( '>=' date ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$date.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$date.st) | ^( '>=' time ) -> {isDataframe}? greaterOrEqual(colIndex=dataframecola=$time.stisdataframe=isDataframe) -> greaterOrEqual(colIndex=cola=$time.st) | ^( 'contains' e= STRING_LITERAL ) -> {hasRowNames}? contains_rownames(rownamesindex=coltext=$e.text) -> contains(colIndex=coltext=$e.text) | ^( 'equals' ( TO )? e= STRING_LITERAL ) -> {hasRowNames}? equal_rownames(rownamesindex=coltext=$e.text) -> {isDataframe}? equal(colIndex=dataframecola=$e.textisdataframe=isDataframe) -> equal(colIndex=cola=$e.text));";
         }
     }
  
@@ -1481,30 +1486,30 @@ public class FilterExpressionRCodeGen extends TreeParser {
     public static final BitSet FOLLOW_time_in_predicate978 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_28_in_predicate1035 = new BitSet(new long[]{0x0000000000000004L});
     public static final BitSet FOLLOW_STRING_LITERAL_in_predicate1039 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_29_in_predicate1081 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_TO_in_predicate1084 = new BitSet(new long[]{0x0000000000000800L});
-    public static final BitSet FOLLOW_STRING_LITERAL_in_predicate1089 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_29_in_predicate1122 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_TO_in_predicate1125 = new BitSet(new long[]{0x0000000000000800L});
+    public static final BitSet FOLLOW_STRING_LITERAL_in_predicate1130 = new BitSet(new long[]{0x0000000000000008L});
     public static final BitSet FOLLOW_set_in_number0 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_TIME_in_time1159 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_DATE_in_time1162 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_INTEGER_in_time1167 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_DATENUM_in_time1173 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_INTEGER_in_time1179 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_DATENUM_in_time1185 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_INTEGER_in_time1191 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DATENUM_in_time1197 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_INTEGER_in_time1204 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_DATENUM_in_time1210 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_INTEGER_in_time1216 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_DATENUM_in_time1222 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_INTEGER_in_time1228 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DATENUM_in_time1234 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DATE_in_date1274 = new BitSet(new long[]{0x0000000000000004L});
-    public static final BitSet FOLLOW_INTEGER_in_date1279 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_DATENUM_in_date1285 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_INTEGER_in_date1291 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_DATENUM_in_date1297 = new BitSet(new long[]{0x0000000000012000L});
-    public static final BitSet FOLLOW_INTEGER_in_date1303 = new BitSet(new long[]{0x0000000000000008L});
-    public static final BitSet FOLLOW_DATENUM_in_date1309 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_TIME_in_time1269 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_DATE_in_time1272 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_INTEGER_in_time1277 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_DATENUM_in_time1283 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_INTEGER_in_time1289 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_DATENUM_in_time1295 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_INTEGER_in_time1301 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DATENUM_in_time1307 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_INTEGER_in_time1314 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_DATENUM_in_time1320 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_INTEGER_in_time1326 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_DATENUM_in_time1332 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_INTEGER_in_time1338 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DATENUM_in_time1344 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DATE_in_date1384 = new BitSet(new long[]{0x0000000000000004L});
+    public static final BitSet FOLLOW_INTEGER_in_date1389 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_DATENUM_in_date1395 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_INTEGER_in_date1401 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_DATENUM_in_date1407 = new BitSet(new long[]{0x0000000000012000L});
+    public static final BitSet FOLLOW_INTEGER_in_date1413 = new BitSet(new long[]{0x0000000000000008L});
+    public static final BitSet FOLLOW_DATENUM_in_date1419 = new BitSet(new long[]{0x0000000000000008L});
 
 }

@@ -317,7 +317,7 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="cb_HeaderRow" min="-2" max="-2" attributes="0"/>
+                              <Component id="cb_ColumnNames" min="-2" max="-2" attributes="0"/>
                               <Component id="cb_RowNames" min="-2" max="-2" attributes="0"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
@@ -348,7 +348,7 @@
                           <Component id="rowsEnd" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="colNamesRowIndex" alignment="3" min="-2" max="-2" attributes="0"/>
-                          <Component id="cb_HeaderRow" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="cb_ColumnNames" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="jLabel10" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -374,13 +374,13 @@
             <Property name="text" type="java.lang.String" value="Rows: from"/>
           </Properties>
         </Component>
-        <Component class="javax.swing.JCheckBox" name="cb_HeaderRow">
+        <Component class="javax.swing.JCheckBox" name="cb_ColumnNames">
           <Properties>
             <Property name="text" type="java.lang.String" value="Use row"/>
           </Properties>
           <Events>
-            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cb_HeaderRowItemStateChanged"/>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cb_HeaderRowActionPerformed"/>
+            <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="cb_ColumnNamesItemStateChanged"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cb_ColumnNamesActionPerformed"/>
           </Events>
         </Component>
         <Component class="javax.swing.JSpinner" name="rowNamesColumnIndex">

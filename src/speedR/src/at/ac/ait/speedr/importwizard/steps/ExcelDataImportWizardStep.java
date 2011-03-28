@@ -26,6 +26,7 @@ import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xssf.eventusermodel.XLSX2CSV;
 import at.ac.ait.speedr.importwizard.WizardPanel;
 import at.ac.ait.speedr.importwizard.WizardValidationException;
+import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
 import au.com.bytecode.opencsv.CSVReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -211,7 +212,6 @@ public class ExcelDataImportWizardStep implements
 
         private InputStream in;
         private ImportTableModel tableModel;
-        private boolean gcCalled = false;
 
         public CSVReaderWorker(InputStream in, ImportTableModel tableModel) {
             this.in = in;
@@ -228,11 +228,19 @@ public class ExcelDataImportWizardStep implements
                     csvReader.readNext();
                 }
 
+                ImportTableModelHelper modelhelper = new ImportTableModelHelper();
+                int line = 0;
+
                 String[] next;
                 while (!isStopped && (next = csvReader.readNext()) != null) {
                     publish(next);
+                    modelhelper.saveRowDataSet(line, next);
+                    line++;
                 }
 
+                modelhelper.close();
+                impPanel.setImportTableModelHelper(modelhelper);
+                
                 csvReader.close();
             } catch (IOException ex) {
                 logger.log(Level.WARNING, ex.getMessage(), ex);
@@ -256,6 +264,7 @@ public class ExcelDataImportWizardStep implements
         protected void done() {
             setValid(true);
             getComponent().setConfigurationPanelEnabled(true);
+            tableModel.convertColumnsToNumericIfPossible();
         }
     }
 

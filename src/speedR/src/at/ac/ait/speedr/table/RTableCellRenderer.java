@@ -28,8 +28,8 @@ public class RTableCellRenderer implements TableCellRenderer {
                 DecimalFormatSymbols dfs = DecimalFormatSymbols.getInstance();
                 dfs.setDecimalSeparator('.');
                 ((DecimalFormat) nf).setDecimalFormatSymbols(dfs);
-                ((DecimalFormat) nf).setDecimalSeparatorAlwaysShown(true);
-                ((DecimalFormat) nf).setMinimumFractionDigits(1);
+//                ((DecimalFormat) nf).setDecimalSeparatorAlwaysShown(true);
+//                ((DecimalFormat) nf).setMinimumFractionDigits(1);
             }
         }
     }

@@ -2,6 +2,7 @@ package at.ac.ait.speedr.codegen;
 
 import at.ac.ait.speedr.codegen.FilterExpressionRCodeGen.rcode_return;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanelUserActionListener;
+import at.ac.ait.speedr.table.RDate;
 import at.ac.ait.speedr.table.RPOSIXct;
 import at.ac.arcs.tablefilter.events.FilterEvent;
 import at.ac.arcs.tablefilter.events.FilterListener;
@@ -12,6 +13,7 @@ import at.ac.arcs.tablefilter.filtermodel.info.FilterInfo;
 import at.ac.arcs.tablefilter.filtermodel.info.FilterRowInfo;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -19,6 +21,8 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.ait.table.filter.FilterExpressionLexer;
 import org.ait.table.filter.FilterExpressionParser;
@@ -68,6 +72,8 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     private int colstartIndex = 1;
     private int colendIndex = 0;
     private String[] colClasses;
+    
+    // rowIndex -> columnIndex + values
     private HashMap<Integer, HashMap<Integer, Object>> cellUpdates =
             new HashMap<Integer, HashMap<Integer, Object>>();
 
@@ -88,14 +94,6 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
             importandfilter_stg = new StringTemplateGroup(r);
             r.close();
         }
-    }
-
-    public void setImportcode(String importcode) {
-        this.importcode = importcode;
-    }
-
-    public void setFiltercode(String filtercode) {
-        this.filtercode = filtercode;
     }
 
     private void setFiltercode() {
@@ -206,30 +204,11 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
 
                     FilterExpressionRCodeGen rcodegen = new FilterExpressionRCodeGen(nodes);
 
-//                    if (model.getColumnName(0).equals("row.names")) {
-//                        rcodegen.setHasRowNames(true);
-//                    }
-//
-//                    int col = filterColumnInfo.getColumn();
-//                    if (rcodegen.hasRowNames() && col == 0) {
-//                        rcodegen.setColumnIndex(null);
-//                    } else if (model.getColumnCount() == 1) {
-//                        rcodegen.setColumnIndex("[1]");
-//                    } else {
-//                        try {
-//                            Integer.parseInt(model.getColumnName(col));
-//                            rcodegen.setColumnIndex("[," + model.getColumnName(col) + "]");
-//                        } catch (NumberFormatException numberFormatException) {
-//                            rcodegen.setColumnIndex("[[\"" + model.getColumnName(col) + "\"]]");
-//                        }
-//                    }
-
                     int col = filterColumnInfo.getColumn();
                     if (col == 0 && model.getColumnName(0).equals("row.names")) {
                         rcodegen.setHasRowNames(true);
                         rcodegen.setColumnIndex("rownames(x)");
                     } else {
-//                        rcodegen.setColumnIndex(tableModel.getColumnIndexCode(col));
                         rcodegen.setDataframe(true);
                         rcodegen.setDataframeColumnIndex(model.getColumnName(col));
                         if (model.getColumnClass(col) == RPOSIXct.class) {
@@ -269,10 +248,14 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     public void separatorChanged(String newvalue) {
         this.delimiterST = import_stg.getInstanceOf("separator");
         this.delimiterST.setAttribute("value", newvalue);
+
+        cellUpdates.clear();
+
         fireStateChanged();
     }
 
     public void quoteChanged(String newvalue) {
+        cellUpdates.clear();
         if (newvalue == null) {
             textqualifierST = null;
         } else {
@@ -310,7 +293,7 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
         fireStateChanged();
     }
 
-    public void hasRowHeaderChanged(Boolean newvalue) {
+    public void hasColumnNamesChanged(Boolean newvalue) {
         this.hasColumnNamesST = import_stg.getInstanceOf("hasColumnNames");
         this.hasColumnNamesST.setAttribute("value", newvalue.toString().toUpperCase());
         fireStateChanged();
@@ -398,8 +381,9 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
         }
     }
 
-    public void setModel(TableModel model) {
-        this.model = model;
+    public void setModel(TableModel tablemodel) {
+        this.model = tablemodel;
+        cellUpdates.clear();
     }
 
     private StringTemplate generateCellUpdates() {
@@ -453,7 +437,9 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
         update.setAttribute("varname", variablename);
         if (cellUpdates.get(rowIndex).get(columnIndex) == null || cellUpdates.get(rowIndex).get(columnIndex).equals("")) {
             update.setAttribute("value", "NA");
-        } else if (cellUpdates.get(rowIndex).get(columnIndex) instanceof Number) {
+        } else if (cellUpdates.get(rowIndex).get(columnIndex) instanceof Number
+                || cellUpdates.get(rowIndex).get(columnIndex) instanceof RDate
+                || cellUpdates.get(rowIndex).get(columnIndex) instanceof RPOSIXct) {
             update.setAttribute("value", cellUpdates.get(rowIndex).get(columnIndex));
         } else {
             update.setAttribute("value", "\"" + cellUpdates.get(rowIndex).get(columnIndex) + "\"");
@@ -474,5 +460,30 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
         update.setAttribute("value", "\"" + cellUpdates.get(rowIndex).get(rowNamesColumnIndex) + "\"");
 
         return update;
+    }
+
+    public void colClassChanged(int columnIndex, String clazz) {
+
+        Integer realColumnIndex;
+        if (hasRowNames && columnIndex == 0) {
+            realColumnIndex = rowNamesColumnIndex;
+        } else {
+            realColumnIndex = colstartIndex + columnIndex;
+        }
+
+        ArrayList<Integer> todelete = new ArrayList<Integer>();
+
+        for (Integer rowIndex : cellUpdates.keySet()) {
+            cellUpdates.get(rowIndex).remove(realColumnIndex);
+            if(cellUpdates.get(rowIndex).isEmpty()){
+                todelete.add(rowIndex);
+            }
+        }
+
+        for(Integer row:todelete){
+            cellUpdates.remove(row);
+        }
+
+        fireStateChanged();
     }
 }

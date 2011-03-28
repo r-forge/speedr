@@ -172,7 +172,7 @@ public class ImportTableModel extends AbstractTableModel {
 
         assert realColIndex >= 0 : "realColIndex: " + realColIndex + " columnIndex: " + columnIndex;
 
-        assert realColIndex < getColumnCount() || getColumnCount() == 0 : "realColIndex is out ouf bound.\n"
+        assert realColIndex < maxColumnCount || getColumnCount() == 0 : "realColIndex is out ouf bound.\n"
                 + " realColIndex: " + realColIndex + " and column count: " + getColumnCount()
                 + " columnIndex: " + columnIndex;
 
@@ -190,20 +190,7 @@ public class ImportTableModel extends AbstractTableModel {
 
         Object oldValue = getValueAt(rowIndex, columnIndex);
 
-        if (aValue != null && aValue instanceof String) {
-            if (NumberUtils.isNumber(aValue.toString())) {
-                aValue = NumberUtils.createDouble(aValue.toString());
-                allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
-                if (checkColumnClass(columnIndex)) {
-                    fireTableStructureChanged();
-                    return;
-                }
-            } else {
-                allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
-            }
-        } else {
-            allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
-        }
+        allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = aValue;
 
         if (oldValue != null && aValue != null) {
             if (!oldValue.equals(aValue)) {
@@ -245,9 +232,43 @@ public class ImportTableModel extends AbstractTableModel {
         addingRow = true;
         int index = allData.size();
 
+        boolean colendchanged = false;
+
         Object[] newRow;
         for (String[] row : rowData) {
             newRow = convertRowAndSetColumnClasses(row);
+
+            allData.put(index++, newRow);
+            if (maxColumnCount < row.length) {
+                maxColumnCount = row.length;
+                colendchanged = true;
+            }
+        }
+
+        if (colendchanged) {
+            setColEnd(maxColumnCount - 1);
+        }
+
+        setRowEnd(allData.size() - 1);
+        addingRow = false;
+    }
+
+    public void addRows(List<String[]> rowData) {
+        addingRow = true;
+        int index = allData.size();
+        Object[] newRow;
+
+        for (String[] row : rowData) {
+            for (int i = 0; i < row.length; i++) {
+                row[i] = StringUtils.trimToNull(row[i]);
+                if (!classes.containsKey(i)) {
+                    classes.put(i, String.class);
+                    columnMismatchCounter.put(i, 0);
+                }
+            }
+
+            newRow = new Object[row.length];
+            System.arraycopy(row, 0, newRow, 0, row.length);
 
             allData.put(index++, newRow);
             if (maxColumnCount < row.length) {
@@ -258,6 +279,26 @@ public class ImportTableModel extends AbstractTableModel {
 
         setRowEnd(allData.size() - 1);
         addingRow = false;
+    }
+
+    public void convertColumnsToNumericIfPossible() {
+        boolean fireTableStructureChanged = false;
+
+        for (int i = 0; i < getColumnCount(); i++) {
+            if (i == 0 && hasRownames) {
+                continue;
+            }
+            try {
+                checkNumeric(i);
+                convertToNumeric(i, false, false);
+                fireTableStructureChanged = true;
+            } catch (Exception ex) {
+            }
+        }
+
+        if (fireTableStructureChanged) {
+            fireTableStructureChanged();
+        }
     }
 
     private Object[] convertRowAndSetColumnClasses(String[] row) {
@@ -311,12 +352,13 @@ public class ImportTableModel extends AbstractTableModel {
             if (!clearing) {
                 if (hasColnames && rowStart <= colnamesRowIndex) {
                     setRowStart(colnamesRowIndex + 1);
-                } else {
-                    checkAllColumnClasses();
                 }
-                if (!fireTableStructureChangedCalled) {
-                    fireTableStructureChanged();
-                }
+//                else {
+//                    checkAllColumnClasses();
+//                }
+//                if (!fireTableStructureChangedCalled) {
+                fireTableStructureChanged();
+//                }
             }
             propertyChangeSupport.firePropertyChange(PROP.HASCOLUMNNAMES.name(), oldValue, this.hasColnames);
         }
@@ -350,13 +392,18 @@ public class ImportTableModel extends AbstractTableModel {
         if (this.hasRownames != hasRownames && maxColumnCount > 1) {
             boolean oldValue = this.hasRownames;
             this.hasRownames = hasRownames;
-            if (colEnd > 0) {
-                if (this.hasRownames && colEnd + 1 == maxColumnCount) {
-                    setColEnd(colEnd - 1);
-                } else {
-                    setColEnd(colEnd + 1);
-                }
+            if(this.hasRownames){
+                setColEnd(this.colEnd - 1);
+            }else{
+                setColEnd(this.colEnd + 1);
             }
+//            if (this.colEnd > 0) {
+//            if (this.hasRownames && this.colEnd == maxColumnCount - 1) {
+//                setColEnd(this.colEnd - 1);
+//            } else if(!this.hasRownames && this.colEnd == maxColumnCount - 2) {
+//                setColEnd(this.colEnd + 1);
+//            }
+//            }
             propertyChangeSupport.firePropertyChange(PROP.HASROWNAMES.name(), oldValue, this.hasRownames);
         }
     }
@@ -383,10 +430,10 @@ public class ImportTableModel extends AbstractTableModel {
             } else {
                 fireTableRowsInserted(0, oldStartValue - rowStart - 1);
             }
-            if (!clearing && checkAllColumnClasses()) {
-                fireTableStructureChanged();
-                fireTableStructureChangedCalled = true;
-            }
+//            if (!clearing && checkAllColumnClasses()) {
+//                fireTableStructureChanged();
+//                fireTableStructureChangedCalled = true;
+//            }
             propertyChangeSupport.firePropertyChange(PROP.RANGE_ROWSTART.name(), oldStartValue, this.rowStart);
         }
     }
@@ -413,9 +460,9 @@ public class ImportTableModel extends AbstractTableModel {
                     fireTableRowsInserted(oldEndValue - rowStart, this.rowEnd - rowStart);
                 }
             }
-            if (!addingRow && !clearing && checkAllColumnClasses()) {
-                fireTableStructureChanged();
-            }
+//            if (!addingRow && !clearing && checkAllColumnClasses()) {
+//                fireTableStructureChanged();
+//            }
             propertyChangeSupport.firePropertyChange(PROP.RANGE_ROWEND.name(), oldEndValue, this.rowEnd);
         }
     }
@@ -478,22 +525,32 @@ public class ImportTableModel extends AbstractTableModel {
     }
 
     public void convertToNumeric(int columnIndex) throws Exception {
-        if (getColumnClass(columnIndex) != Double.class) {
-            checkNumeric(columnIndex);
+        convertToNumeric(columnIndex, true, true);
+    }
 
-            for (int i = 0; i < getRowCount(); i++) {
-                if (!(getValueAt(i, columnIndex) instanceof Number)) {
-                    if (getValueAt(i, columnIndex) == null
-                            || StringUtils.isBlank(getValueAt(i, columnIndex).toString())) {
-                        setValueAt(null, i, columnIndex);
-                    } else {
-                        setValueAt(NumberUtils.createDouble(StringUtils.deleteWhitespace(getValueAt(i, columnIndex).toString())), i, columnIndex);
+    private void convertToNumeric(int columnIndex, boolean checkfirstnumeric, boolean fireTableStructureChanged) throws Exception {
+        if (getColumnClass(columnIndex) != Double.class) {
+            if (checkfirstnumeric) {
+                checkNumeric(columnIndex);
+            }
+            String val;
+            for (int rowIndex = 0; rowIndex < getRowCount(); rowIndex++) {
+                if (getValueAt(rowIndex, columnIndex) == null){
+                    allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = null;
+                }else{
+                    val = StringUtils.trimToNull(getValueAt(rowIndex, columnIndex).toString());
+                    if(val == null || val.equalsIgnoreCase("NA")){
+                        allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = null;
+                    }else{
+                        allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = NumberUtils.createDouble(val);
                     }
                 }
             }
 
             classes.put(getRealColumnIndex(columnIndex), Double.class);
-            fireTableStructureChanged();
+            if (fireTableStructureChanged) {
+                fireTableStructureChanged();
+            }
         }
     }
 
@@ -502,41 +559,49 @@ public class ImportTableModel extends AbstractTableModel {
         err.append("Non-numeric values found in column ").append(getColumnName(columnIndex)).append("\nRows containing non-numeric values:\n");
 
         int failcount = 0;
+        String val;
         for (int i = 0; i < getRowCount(); i++) {
-            if (getValueAt(i, columnIndex) != null
-                    && !StringUtils.isBlank(getValueAt(i, columnIndex).toString())
-                    && !NumberUtils.isNumber(getValueAt(i, columnIndex).toString())) {
+            if (getValueAt(i, columnIndex) != null) {
+                val = StringUtils.trimToNull(getValueAt(i, columnIndex).toString());
 
-                failcount++;
-                err.append(i + 1).append(",");
-                if (failcount == 10) {
-                    err.deleteCharAt(err.length() - 1);
-                    err.append("...");
-                    break;
+                if (val != null && !val.equalsIgnoreCase("NA") && !NumberUtils.isNumber(val)) {
+                    failcount++;
+                    err.append(i + 1).append(",");
+                    if (failcount == MAXMISMATCH) {
+                        err.deleteCharAt(err.length() - 1);
+                        err.append("...");
+                        break;
+                    }
                 }
             }
         }
 
         if (failcount > 0) {
+            columnMismatchCounter.put(getRealColumnIndex(columnIndex), failcount);
             throw new Exception(err.toString());
         }
     }
 
-    public void convertToText(int columnIndex) {
-        if (getColumnClass(columnIndex) == RDate.class || getColumnClass(columnIndex) == RPOSIXct.class ) {
-
-            SimpleDateFormat sdf;
-            if(getColumnClass(columnIndex) == RDate.class){
-                sdf = new SimpleDateFormat("yyyy-MM-dd");
-            }else{
-                sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:");
-            }
-            for (int i = 0; i < getRowCount(); i++) {
-                if (getValueAt(i, columnIndex) != null) {
-                    allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = sdf.format((Date) getValueAt(i, columnIndex));
-                }
+    public boolean containsNonNumeric(int columnIndex) {
+        for (int i = 0; i < getRowCount(); i++) {
+            if (getValueAt(i, columnIndex) != null
+                    && !StringUtils.isBlank(getValueAt(i, columnIndex).toString())
+                    && !NumberUtils.isNumber(getValueAt(i, columnIndex).toString())) {
+                return true;
             }
         }
+        return false;
+    }
+
+    public void convertToText(int columnIndex, List<String> columndata) {
+        if (columndata.size() != allData.size()) {
+            throw new IllegalArgumentException("The size of the list containing column data is not equal to allData size.");
+        }
+
+        for (int i = 0; i < allData.size(); i++) {
+            allData.get(i)[getRealColumnIndex(columnIndex)] = columndata.get(i);
+        }
+
         if (getColumnClass(columnIndex) != String.class) {
             classes.put(getRealColumnIndex(columnIndex), String.class);
             fireTableStructureChanged();
@@ -547,20 +612,26 @@ public class ImportTableModel extends AbstractTableModel {
         if (getColumnClass(columnIndex) == RDate.class) {
             return;
         } else if (getColumnClass(columnIndex) == RPOSIXct.class) {
-            for (int i = 0; i < getRowCount(); i++) {
+
+            for (int i = 0;
+                    i < getRowCount();
+                    i++) {
                 if (getValueAt(i, columnIndex) != null) {
                     allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = new RDate((Date) getValueAt(i, columnIndex));
                 }
             }
 
-            classes.put(getRealColumnIndex(columnIndex), RDate.class);
+            classes.put(getRealColumnIndex(
+                    columnIndex), RDate.class);
             fireTableStructureChanged();
             return;
-        }        
+        }
 
         ArrayList<Date> checkDate = checkDate(columnIndex, pattern);
 
-        for (int i = 0; i < checkDate.size(); i++) {
+        for (int i = 0;
+                i < checkDate.size();
+                i++) {
             if (checkDate.get(i) == null) {
                 allData.get(getRealRowIndex(i))[getRealColumnIndex(columnIndex)] = null;
             } else {
@@ -612,11 +683,11 @@ public class ImportTableModel extends AbstractTableModel {
 
         ArrayList<Date> dates = new ArrayList<Date>();
         int failcount = 0;
-        for (int i = 0; i < getRowCount() && failcount < 10; i++) {
+        for (int i = 0; i < getRowCount() && failcount < MAXMISMATCH; i++) {
             if (getValueAt(i, columnIndex) != null
                     && !StringUtils.isBlank(getValueAt(i, columnIndex).toString())) {
                 try {
-                    dates.add(parseDate(getValueAt(i, columnIndex).toString().trim(), parsePatterns,parser,pos));
+                    dates.add(parseDate(getValueAt(i, columnIndex).toString().trim(), parsePatterns, parser, pos));
                 } catch (ParseException ex) {
                     failcount++;
                     err.append(i + 1).append(',');
@@ -627,7 +698,7 @@ public class ImportTableModel extends AbstractTableModel {
         }
 
         if (failcount > 0) {
-            if (failcount == 10) {
+            if (failcount == MAXMISMATCH) {
                 err.append("...");
             } else {
                 err.deleteCharAt(err.length() - 1);
@@ -638,7 +709,7 @@ public class ImportTableModel extends AbstractTableModel {
         return dates;
     }
 
-    private Date parseDate(String str,String[] parsePatterns,SimpleDateFormat parser,ParsePosition pos) throws ParseException{
+    private Date parseDate(String str, String[] parsePatterns, SimpleDateFormat parser, ParsePosition pos) throws ParseException {
         for (int i = 0; i < parsePatterns.length; i++) {
 
             String pattern = parsePatterns[i];
@@ -653,7 +724,6 @@ public class ImportTableModel extends AbstractTableModel {
         }
         throw new ParseException("Unable to parse the date: " + str, -1);
     }
-
     private PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
     /**

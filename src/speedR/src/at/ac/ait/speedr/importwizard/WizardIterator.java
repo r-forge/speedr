@@ -6,13 +6,11 @@ import at.ac.ait.speedr.importwizard.steps.DataImportPanel;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanelUserActionListener;
 import at.ac.ait.speedr.importwizard.steps.DataSourceWizardStep;
 import at.ac.ait.speedr.importwizard.steps.ExcelDataImportWizardStep;
-import at.ac.ait.speedr.importwizard.steps.ImportTableModel;
 import at.ac.ait.speedr.workspace.RUtil;
 import at.ac.arcs.tablefilter.ARCTable;
 import at.ac.arcs.tablefilter.events.FilterListener;
 import java.beans.PropertyChangeListener;
 import java.util.NoSuchElementException;
-import javax.swing.table.DefaultTableModel;
 import org.rosuda.REngine.REXPGenericVector;
 
 /**

@@ -94,8 +94,9 @@ predicate:	^(OR a=predicate b=predicate) -> or(a={$a.st},b={$b.st})
 			      -> greaterOrEqual(colIndex={col},a={$time.st})		      
 
 	|	^('contains' e=STRING_LITERAL) -> {hasRowNames}? contains_rownames(rownamesindex={col},text={$e.text})
-						-> contains(colIndex={col},text={$e.text})
+                                               -> contains(colIndex={col},text={$e.text})
 	| 	^('equals'  TO? e=STRING_LITERAL) -> {hasRowNames}? equal_rownames(rownamesindex={col},text={$e.text})
+                                                  -> {isDataframe}? equal(colIndex={dataframecol},a={$e.text},isdataframe={isDataframe})
 						  -> equal(colIndex={col},a={$e.text})
 	;
 

@@ -30,6 +30,7 @@ import javax.swing.event.ChangeListener;
 
 import at.ac.ait.speedr.importwizard.WizardPanel;
 import at.ac.ait.speedr.importwizard.WizardValidationException;
+import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
 import au.com.bytecode.opencsv.CSVReader;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -241,6 +242,8 @@ public class CSVDataImportWizardStep implements
 
     public void startProcessing() {
         isStopped = false;
+        hasColumnNames = false;
+        hasRowNames = false;
         InputStream in = getInput();
         if (in == null) {
             return;
@@ -428,6 +431,8 @@ public class CSVDataImportWizardStep implements
 
                 hasColumnNames = true;
                 hasRowNames = true;
+            }else if(((String) settings.getProperty(DataSourceWizardStep.PROP_EXTENSION)).equals("csv")){
+                hasColumnNames = true;
             }
         }
     }
@@ -488,11 +493,16 @@ public class CSVDataImportWizardStep implements
             try {
 
                 CSVReader reader = new CSVReader(new InputStreamReader(in), getDelimiter(), getQualifier());
-
+                ImportTableModelHelper modelhelper = new ImportTableModelHelper();
                 String[] nextLine;
+                int line = 0;
                 while (!isStopped && (nextLine = reader.readNext()) != null) {
                     publish(nextLine);
+                    modelhelper.saveRowDataSet(line, nextLine);
+                    line++;
                 }
+                modelhelper.close();
+                impPanel.setImportTableModelHelper(modelhelper);
             } catch (IOException ex) {
                 logger.log(Level.WARNING, "Unexpected end of the swingworker", ex);
                 settings.putProperty(WizardPanel.PROP_ERROR_MESSAGE, ex.getMessage());
@@ -505,7 +515,7 @@ public class CSVDataImportWizardStep implements
         @Override
         protected void process(List<String[]> chunks) {
             try {
-                tableModel.addRow(chunks);
+                tableModel.addRows(chunks);
             } catch (OutOfMemoryError err) {
                 outOfMemoryHandle();
             }
@@ -516,6 +526,7 @@ public class CSVDataImportWizardStep implements
             setValid(true);
             tableModel.setHasColumnNames(hasColumnNames);
             tableModel.setHasRowNames(hasRowNames);
+            tableModel.convertColumnsToNumericIfPossible();
             getComponent().setConfigurationPanelEnabled(true);
             logger.log(Level.INFO, "CSVReaderWorker(SwingWorker) is done");
         }

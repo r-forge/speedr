@@ -506,7 +506,6 @@ public class WizardPanel extends javax.swing.JPanel {
     }
 
     public static void main(String[] args) {
-
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
