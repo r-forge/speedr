@@ -1,6 +1,5 @@
 Package:	speedRlibTF
-Version:	0.3-22
-Date:	2011-01-23
+Version:	0.3-27
 Title:	speedR's table filter library
 Author:	Ilhami Visne
 Maintainer:	Ilhami Visne <ilhami.visne@ait.ac.at>
