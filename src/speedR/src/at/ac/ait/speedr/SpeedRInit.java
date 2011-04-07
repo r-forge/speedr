@@ -23,7 +23,7 @@ public class SpeedRInit {
         System.setOut(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
         System.setErr(new PrintStream(new RConsoleOutputStream(Rengine.getMainEngine(), 0)));
 
-        Logger root = Logger.getLogger("");
+        Logger root = Logger.getLogger("at.ac.ait.speedr");
 
         root.setLevel(rootLogLevel);
         File logdir = new File(System.getProperty("user.home") + "/speedR");

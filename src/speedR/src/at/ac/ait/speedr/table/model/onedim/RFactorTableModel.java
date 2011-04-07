@@ -60,7 +60,7 @@ public class RFactorTableModel extends RAbstractTableModel{
 
     @Override
     public Class<?> getColumnClass(int columnIndex) {
-        return String.class;
+        return REXPFactor.class;
     }
 
     @Override

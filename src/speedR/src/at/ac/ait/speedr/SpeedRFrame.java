@@ -58,6 +58,8 @@ import at.ac.arcs.tablefilter.cell.DateCellRenderer;
 import at.ac.arcs.tablefilter.events.FilterEvent;
 import at.ac.arcs.tablefilter.events.FilterListener;
 import at.ac.arcs.tablefilter.filtermodel.DateFilterDevice;
+import at.ac.arcs.tablefilter.filtermodel.NumericFilterDevice;
+import at.ac.arcs.tablefilter.filtermodel.StringFilterDevice;
 import au.com.bytecode.opencsv.CSVWriter;
 import bibliothek.gui.DockTheme;
 import bibliothek.gui.dock.common.action.CAction;
@@ -77,7 +79,10 @@ import javax.swing.SwingWorker;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.rosuda.REngine.REXPDouble;
+import org.rosuda.REngine.REXPFactor;
 import org.rosuda.REngine.REXPGenericVector;
+import org.rosuda.REngine.REXPInteger;
 
 /**
  *
@@ -87,6 +92,9 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
     private static final Logger logger = Logger.getLogger(SpeedRFrame.class.getName());
     private static SpeedRFrame rif;
+    private static final NumericFilterDevice numericFilterDevice = new NumericFilterDevice();
+    private static final RDateTimeConverter rDateTimeConverter = new RDateTimeConverter();
+    private static final StringFilterDevice stringFilterDevice = new StringFilterDevice();
 
     private static SpeedRFrame getInstance() throws REngineException, REXPMismatchException {
         if (rif == null) {
@@ -95,6 +103,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
         return rif;
     }
+    private final DateFilterDevice dateFilterDevice = new DateFilterDevice();
     private MultipleCDockableFactory<MultipleCDockable, MultipleCDockableLayout> multiDockFactory =
             new EmptyMultipleCDockableFactory<MultipleCDockable>() {
 
@@ -104,6 +113,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
                 }
             };
     private CControl control;
+
     private CWorkingArea tablesWorkArea;
     private DefaultSingleCDockable filtercode_dock;
     private DefaultMultipleCDockable activeDock;
@@ -220,7 +230,6 @@ public class SpeedRFrame extends javax.swing.JFrame {
                     @Override
                     protected void action() {
                         try {
-//                            refreshObjectBrowser();
                             workspace.reload();
                         } catch (Exception ex) {
                             Logger.getLogger(SpeedRFrame.class.getName()).log(Level.SEVERE, null, ex);
@@ -282,21 +291,29 @@ public class SpeedRFrame extends javax.swing.JFrame {
         arcTable.setModel(model);
         arcTable.setColumnSelectorVisible(false);
 
-        arcTable.registerFilterDevice(RDate.class, new DateFilterDevice());
-        arcTable.registerFilterDevice(RPOSIXct.class, new DateFilterDevice());
-        arcTable.registerConverter(RDate.class, new RDateTimeConverter());
-        arcTable.registerConverter(RPOSIXct.class, new RDateTimeConverter());
+        registerDeviceAndConverter( arcTable);
+        setDefaultRendererAndEditor(arcTable);
 
         addFilterTable(arcTable, objectname);
     }
 
-    public DefaultMultipleCDockable addFilterTable(final ARCTable table, final String title) {
+    private void registerDeviceAndConverter(ARCTable arcTable) {
+        arcTable.registerFilterDevice(REXPInteger.class, numericFilterDevice);
+        arcTable.registerFilterDevice(REXPDouble.class, numericFilterDevice);
+        arcTable.registerFilterDevice(REXPFactor.class, stringFilterDevice);
+        arcTable.registerFilterDevice(RDate.class, dateFilterDevice);
+        arcTable.registerFilterDevice(RPOSIXct.class, dateFilterDevice);
+        arcTable.registerConverter(RDate.class, rDateTimeConverter);
+        arcTable.registerConverter(RPOSIXct.class, rDateTimeConverter);
+    }
+
+    private DefaultMultipleCDockable addFilterTable(final ARCTable table, final String title) {
         textArea.setText("");
         if (activeDock != null) {
             activeDockCloaseAction.close(activeDock);
         }
 
-        setDefaultRendererAndEditor(table);
+        
 
         String functionname = title.replace("[[\"", "_").replace("\"]]", "") + "_filter";
         boolean hasRownames = table.getModel().getColumnName(0).equals("row.names")
@@ -328,8 +345,9 @@ public class SpeedRFrame extends javax.swing.JFrame {
     private void setDefaultRendererAndEditor(final ARCTable table) {
         RTableCellRenderer cr = new RTableCellRenderer(table.getDefaultRenderer(Object.class));
         table.setDefaultRenderer(Object.class, cr);
-        table.setDefaultRenderer(Integer.class, cr);
-        table.setDefaultRenderer(Double.class, cr);
+        table.setDefaultRenderer(REXPInteger.class, cr);
+        table.setDefaultRenderer(REXPDouble.class, cr);
+        table.setDefaultRenderer(REXPFactor.class, cr);
         table.setDefaultRenderer(String.class, cr);
         table.setDefaultRenderer(Boolean.class, cr);
         table.setDefaultRenderer(RDate.class, new DateCellRenderer());
@@ -337,8 +355,9 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
         RTableCellEditor editor = new RTableCellEditor(table.getDefaultEditor(Object.class));
         table.setDefaultEditor(Object.class, editor);
-        table.setDefaultEditor(Integer.class, editor);
-        table.setDefaultEditor(Double.class, editor);
+        table.setDefaultEditor(REXPInteger.class, editor);
+        table.setDefaultEditor(REXPDouble.class, editor);
+        table.setDefaultEditor(REXPFactor.class, editor);
         table.setDefaultEditor(String.class, editor);
         table.setDefaultEditor(RDate.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
         table.setDefaultEditor(RPOSIXct.class, new RTableCellEditor(table.getDefaultEditor(Date.class)));
@@ -591,6 +610,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
                             }
                         } else {
                             exportTableToR(table, varname);
+                            workspace.reload();
                         }
                     } catch (Exception ex) {
                         JOptionPane.showMessageDialog(rif, "Export failed!");

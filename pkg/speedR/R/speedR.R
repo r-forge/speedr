@@ -16,7 +16,11 @@ speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){
 		}
 		
 		if(!is.null(maxmemory)){
-			jvmparameters = paste("-Xmx",maxmemory,"m",sep="");			
+			jvmparameters = c(jvmparameters,paste("-Xmx",maxmemory,"m",sep=""))
+		}
+		
+		if(.Platform$OS.type == "windows" && nchar(.Platform$r_arch)){
+			jvmparameters = c(jvmparameters, paste("-Dr.arch=/",.Platform$r_arch,sep=''))
 		}
 		
 		if(length(jvmparameters)>0){

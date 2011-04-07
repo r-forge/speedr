@@ -6,6 +6,7 @@ import at.ac.ait.speedr.table.model.RAbstractTableModel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.rosuda.REngine.REXPDouble;
+import org.rosuda.REngine.REXPFactor;
 import org.rosuda.REngine.REXPGenericVector;
 import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPLogical;
@@ -60,7 +61,7 @@ public class RDataFrameTableModel extends RAbstractTableModel {
 
                     colClasses[i] = RDate.class;
                     continue;
-                }else if (data.asList().at(i).hasAttribute("class")
+                } else if (data.asList().at(i).hasAttribute("class")
                         && data.asList().at(i).getAttribute("class").asString().equals("POSIXct")) {
 
                     colClasses[i] = RPOSIXct.class;
@@ -71,18 +72,18 @@ public class RDataFrameTableModel extends RAbstractTableModel {
             }
 
             if (data.asList().at(i).isFactor()) {
-                colClasses[i] = String.class;
+                colClasses[i] = REXPFactor.class;
             } else if (data.asList().at(i).isNumeric()) {
                 if (data.asList().at(i).isInteger()) {
-                    colClasses[i] = Integer.class;
+                    colClasses[i] = REXPInteger.class;
                 } else {
-                    colClasses[i] = Double.class;
+                    colClasses[i] = REXPDouble.class;
                 }
             } else if (data.asList().at(i).isString()) {
                 colClasses[i] = String.class;
-            } else if(data.asList().at(i).isLogical()){
+            } else if (data.asList().at(i).isLogical()) {
                 colClasses[i] = Boolean.class;
-            }else {
+            } else {
                 colClasses[i] = super.getColumnClass(i);
             }
         }
@@ -106,34 +107,33 @@ public class RDataFrameTableModel extends RAbstractTableModel {
 
         try {
             if (colClasses[columnIndex] == RDate.class) {
-                return new RDate((long)data.asList().at(columnIndex).asDoubles()[rowIndex]);
-            }else if (colClasses[columnIndex] == RPOSIXct.class) {
-                return new RPOSIXct((long)data.asList().at(columnIndex).asDoubles()[rowIndex]);
-            } else if(colClasses[columnIndex] == Boolean.class){
-                if(REXPLogical.isNA(data.asList().at(columnIndex).asBytes()[columnIndex])){
+                return new RDate((long) data.asList().at(columnIndex).asDoubles()[rowIndex]);
+            } else if (colClasses[columnIndex] == RPOSIXct.class) {
+                return new RPOSIXct((long) data.asList().at(columnIndex).asDoubles()[rowIndex]);
+            } else if (colClasses[columnIndex] == Boolean.class) {
+                if (REXPLogical.isNA(data.asList().at(columnIndex).asBytes()[columnIndex])) {
                     return null;
-                }else{
+                } else {
                     return data.asList().at(columnIndex).asBytes()[columnIndex] == REXPLogical.TRUE;
                 }
-            }else if (data.asList().at(columnIndex).isFactor()) {
+            } else if (colClasses[columnIndex] == REXPFactor.class) {
                 return data.asList().at(columnIndex).asFactor().at(rowIndex);
-            } else if (data.asList().at(columnIndex).isNumeric()) {
-                if (data.asList().at(columnIndex).isInteger()) {
-                    if (REXPInteger.isNA(data.asList().at(columnIndex).asIntegers()[rowIndex])) {
-                        return null;
-                    } else {
-                        return data.asList().at(columnIndex).asIntegers()[rowIndex];
-                    }
+            } else if (colClasses[columnIndex] == REXPInteger.class) {
+                if (REXPInteger.isNA(data.asList().at(columnIndex).asIntegers()[rowIndex])) {
+                    return null;
                 } else {
-                    if (REXPDouble.isNA(data.asList().at(columnIndex).asDoubles()[rowIndex])) {
-                        return null;
-                    } else {
-                        return data.asList().at(columnIndex).asDoubles()[rowIndex];
-                    }
+                    return data.asList().at(columnIndex).asIntegers()[rowIndex];
                 }
-            } else if (data.asList().at(columnIndex).isString()) {
+            } else if (colClasses[columnIndex] == REXPDouble.class) {
+                if (REXPDouble.isNA(data.asList().at(columnIndex).asDoubles()[rowIndex])) {
+                    return null;
+                } else {
+                    return data.asList().at(columnIndex).asDoubles()[rowIndex];
+                }
+            } else if (colClasses[columnIndex] == String.class) {
                 return data.asList().at(columnIndex).asStrings()[rowIndex];
             } else {
+                Logger.getLogger(RDataFrameTableModel.class.getName()).log(Level.WARNING, "Unknown column class type: {0}", getColumnClass(columnIndex));
                 return "Error: null";
             }
         } catch (REXPMismatchException ex) {

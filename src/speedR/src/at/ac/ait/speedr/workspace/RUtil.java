@@ -7,17 +7,14 @@ import at.ac.arcs.tablefilter.ARCTable;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.apache.commons.lang3.time.DateUtils;
 import org.rosuda.REngine.REXP;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPFactor;
 import org.rosuda.REngine.REXPGenericVector;
+import org.rosuda.REngine.REXPInteger;
 import org.rosuda.REngine.REXPList;
 import org.rosuda.REngine.REXPString;
 import org.rosuda.REngine.RList;
@@ -31,43 +28,29 @@ public class RUtil {
     public static final String[] parsePOSIXctPattern = new String[]{"yyyy-MM-dd HH:mm:ss",
         "yyyy/MM/dd HH:mm:ss", "yyyy.MM.dd HH:mm:ss", "yyyy-MM-dd HH:mm", "yyyy.MM.dd HH:mm",
         "yyyy/MM/dd HH:mm", "yyyy-MM-dd", "yyyy.MM.dd", "yyyy/MM/dd"};
-    
     public static final String[] parsePOSIXctPatternInRFormat = new String[]{
         "%Y-%m-%d %H:%M:%S", "%Y.%m.%d %H:%M:%S", "%Y/%m/%d %H:%M:%S",
         "%Y-%m-%d %H:%M", "%Y.%m.%d %H:%M", "%Y/%m/%d %H:%M", "%Y-%m-%d",
         "%Y.%m.%d", "%Y/%m/%d"};
-
     public static final String[] parseDatePattern =
             new String[]{"yyyy-MM-dd", "yyyy.MM.dd", "yyyy/MM/dd"};
-
     public static final String[] parseDatePatternInRFormat = new String[]{
         "%Y-%m-%d", "%Y.%m.%d", "%Y/%m/%d"};
-
     public static final String defaultPOSIXctPattern = new SimpleDateFormat().toPattern();
-
     public static final String defaultDatePattern =
             defaultPOSIXctPattern.substring(0, defaultPOSIXctPattern.indexOf(' '));
-
-    public static final String defaultDatePatternInRFormat = defaultDatePattern.
-            replaceAll("y+", "%Y").replaceAll("M+", "%m").replaceAll("d+", "%d");
-
+    public static final String defaultDatePatternInRFormat = defaultDatePattern.replaceAll("y+", "%Y").replaceAll("M+", "%m").replaceAll("d+", "%d");
     private static final String defaultTimePattern =
-            defaultPOSIXctPattern.substring(defaultPOSIXctPattern.indexOf(' ')+1,defaultPOSIXctPattern.length());
-
-    private static final String defaultTimePatternInRFormat = defaultTimePattern.
-            replaceAll("H+", "%H").replaceAll("m+", "%M").replaceAll("s+", "%S");
-
-
+            defaultPOSIXctPattern.substring(defaultPOSIXctPattern.indexOf(' ') + 1, defaultPOSIXctPattern.length());
+    private static final String defaultTimePatternInRFormat = defaultTimePattern.replaceAll("H+", "%H").replaceAll("m+", "%M").replaceAll("s+", "%S");
     public static final String defaultPOSIXctPatternInRFormat =
             defaultDatePatternInRFormat + " " + defaultTimePatternInRFormat;
-    
 
-    public static String convertPatternFromRFormat(String pattern){
+    public static String convertPatternFromRFormat(String pattern) {
         return pattern.replaceFirst("(?i)%y", "yyyy").replaceFirst("%m", "MM").
                 replaceFirst("(?i)%d", "dd").replaceFirst("(?i)%H", "HH").replaceFirst("%M", "mm").
                 replaceFirst("(?i)%S", "ss");
     }
-
     private static NumberFormat nf;
 
     private static void initNumberFormatter() {
@@ -215,20 +198,39 @@ public class RUtil {
         }
 
 
-        for (int j = 0; columnBeginIndexWithoutRowNamesColumn < arctable.getColumnCount(); columnBeginIndexWithoutRowNamesColumn++, j++) {
-            if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.NUMERIC) {
-                payload[j] = createREXPDouble(arctable, columnBeginIndexWithoutRowNamesColumn);
-            } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.CHARACTER) {
-                payload[j] = createREXPString(arctable, columnBeginIndexWithoutRowNamesColumn);
-            } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.FACTOR) {
-                payload[j] = createREXPFactor(arctable, columnBeginIndexWithoutRowNamesColumn);
-            } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.DATE) {
-                payload[j] = createDate(arctable, columnBeginIndexWithoutRowNamesColumn);
-            } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.POSIXCT) {
-                payload[j] = createPOSIXct(arctable, columnBeginIndexWithoutRowNamesColumn);
+        if (arctable.isColumnSelectorVisible()) {
+            for (int j = 0; columnBeginIndexWithoutRowNamesColumn < arctable.getColumnCount(); columnBeginIndexWithoutRowNamesColumn++, j++) {
+                if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.NUMERIC) {
+                    payload[j] = createREXPDouble(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.CHARACTER) {
+                    payload[j] = createREXPString(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.FACTOR) {
+                    payload[j] = createREXPFactor(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.DATE) {
+                    payload[j] = createDate(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnSelectorOption(columnBeginIndexWithoutRowNamesColumn).getObject() == DataImportPanel.ColumnType.POSIXCT) {
+                    payload[j] = createPOSIXct(arctable, columnBeginIndexWithoutRowNamesColumn);
+                }
+                names[j] = arctable.getColumnName(columnBeginIndexWithoutRowNamesColumn);
             }
-            names[j] = arctable.getColumnName(columnBeginIndexWithoutRowNamesColumn);
+        } else {
+            for (int j = 0; columnBeginIndexWithoutRowNamesColumn < arctable.getColumnCount(); columnBeginIndexWithoutRowNamesColumn++, j++) {
+                if (arctable.getColumnClass(columnBeginIndexWithoutRowNamesColumn) == REXPDouble.class || arctable.getColumnClass(columnBeginIndexWithoutRowNamesColumn) == REXPInteger.class) {
+                    payload[j] = createREXPDouble(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnClass(columnBeginIndexWithoutRowNamesColumn) == String.class) {
+                    payload[j] = createREXPString(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnClass(columnBeginIndexWithoutRowNamesColumn) == REXPFactor.class) {
+                    payload[j] = createREXPFactor(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnClass(columnBeginIndexWithoutRowNamesColumn) == RDate.class) {
+                    payload[j] = createDate(arctable, columnBeginIndexWithoutRowNamesColumn);
+                } else if (arctable.getColumnClass(columnBeginIndexWithoutRowNamesColumn) == RPOSIXct.class) {
+                    payload[j] = createPOSIXct(arctable, columnBeginIndexWithoutRowNamesColumn);
+                }
+                names[j] = arctable.getColumnName(columnBeginIndexWithoutRowNamesColumn);
+            }
         }
+
+
 
         System.gc();
         REXPString namesREXPString = new REXPString(names);

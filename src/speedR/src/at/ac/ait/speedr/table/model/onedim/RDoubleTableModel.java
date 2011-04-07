@@ -63,7 +63,7 @@ public class RDoubleTableModel extends RAbstractTableModel {
         if (rownames != null && columnIndex == 0) {
             return String.class;
         }
-        return Double.class;
+        return REXPDouble.class;
     }
 
     @Override

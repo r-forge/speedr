@@ -39,7 +39,7 @@ public class RTableCellRenderer implements TableCellRenderer {
 
         if (value == null) {
             label.setText("NA");
-        } else if (value instanceof Double) {
+        } else if (value instanceof Double || value instanceof Integer) {
             label.setText(nf.format(value));
         } else if (value instanceof Boolean) {
             label.setText(((Boolean) value).toString());

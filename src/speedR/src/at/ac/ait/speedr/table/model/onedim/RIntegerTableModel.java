@@ -64,7 +64,7 @@ public class RIntegerTableModel extends RAbstractTableModel {
             return String.class;
         }
 
-        return Integer.class;
+        return REXPInteger.class;
     }
 
     @Override
