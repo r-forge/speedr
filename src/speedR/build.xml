@@ -10,7 +10,6 @@
 <project name="speedR" default="default" basedir=".">
     <description>Builds, tests, and runs the project speedR.</description>
     <import file="nbproject/build-impl.xml"/>
-    <import file="nbproject/profiler-build-impl.xml"/>
     <!--
 
     There exist several targets which are by default empty and which can be
@@ -73,82 +72,36 @@
 
     -->
 
-
-    <property name="rpkg-folder" value="${basedir}/../../pkg"/>
-
-    <target name="clean-pkg">
-        <delete >
-            <fileset dir="${rpkg-folder}/speedRlibs/inst/java" includes="*.jar"/>
-            <fileset dir="${rpkg-folder}/speedR/inst/java" includes="*.jar"/>
-        </delete>
-    </target>
-
     <target name="-post-jar">
-        <copy todir="${rpkg-folder}/speedR/inst/java">
-            <fileset dir="${dist.dir}" includes="*.jar"/>
+        <copy todir="E:/projects/r-forge/speedR/pkg/speedR/inst/java">
+            <fileset dir="${dist.dir}" includes="speedR.jar"/>
         </copy>
-
-        <copy todir="${rpkg-folder}/speedRlibs/inst/java">
-            <fileset dir="${dist.dir}/lib" excludes="iplots.jar,JRI.jar,JGR.jar,JRIEngine.jar,REngine.jar,tablefilter-0.3-SNAPSHOT.jar"/>
+        <copy todir="E:/projects/r-forge/speedR/pkg/speedRlibs/inst/java">
+            <fileset dir="${dist.dir}/lib" excludes="tablefilter*.jar,JRI*.jar,REngine*.jar"/>
         </copy>
-
-        <copy todir="${rpkg-folder}/speedRlibTF/inst/java">
-            <fileset dir="${dist.dir}/lib" includes="tablefilter-0.3-SNAPSHOT.jar"/>
+        <copy todir="E:/projects/r-forge/speedR/pkg/speedRlibTF/inst/java">
+            <fileset dir="${dist.dir}/lib" includes="tablefilter*.jar"/>
         </copy>
     </target>
 
-    <target name="build-speedR-package">
-        <exec dir="${rpkg-folder}" executable="R">
+    <target name="build-package">
+        <exec dir="E:/projects/r-forge/speedR/pkg" executable="R">
             <arg value="CMD"/>
             <arg value="build"/>
             <arg value="--binary"/>
             <arg value="speedR"/>
         </exec>
     </target>
-
-    <target name="build-speedRlibs-package">
-        <exec dir="${rpkg-folder}" executable="R">
+    
+    <target name="check-package">
+        <exec dir="E:/projects/r-forge/speedR/pkg" executable="R">
             <arg value="CMD"/>
-            <arg value="build"/>
-            <arg value="--binary"/>
-            <arg value="speedRlibs"/>
-        </exec>
-    </target>
-
-    <target name="build-speedRlibTF-package">
-        <exec dir="${rpkg-folder}" executable="R">
-            <arg value="CMD"/>
-            <arg value="build"/>
-            <arg value="--binary"/>
-            <arg value="speedRlibTF"/>
-        </exec>
-    </target>
-
-    <target name="check-speedR-package">
-        <exec dir="${rpkg-folder}" executable="R">
-            <arg value="CMD"/>
-            <arg value="check"/>
+            <arg value="check"/>            
             <arg value="speedR"/>
         </exec>
     </target>
 
-    <target name="check-speedRlibs-package">
-        <exec dir="${rpkg-folder}" executable="R">
-            <arg value="CMD"/>
-            <arg value="check"/>
-            <arg value="speedRlibs"/>
-        </exec>
-    </target>
-
-    <target name="check-speedRlibTF-package">
-        <exec dir="${rpkg-folder}" executable="R">
-            <arg value="CMD"/>
-            <arg value="check"/>
-            <arg value="speedRlibTF"/>
-        </exec>
-    </target>
-
-    <target name="remove-speedR-package">
+    <target name="remove-package">
         <exec executable="R">
             <arg value="CMD"/>
             <arg value="REMOVE"/>
@@ -156,24 +109,8 @@
         </exec>
     </target>
 
-    <target name="remove-speedRlibs-package">
-        <exec executable="R">
-            <arg value="CMD"/>
-            <arg value="REMOVE"/>
-            <arg value="speedRlibs"/>
-        </exec>
-    </target>
-
-    <target name="remove-speedRlibTF-package">
-        <exec executable="R">
-            <arg value="CMD"/>
-            <arg value="REMOVE"/>
-            <arg value="speedRlibTF"/>
-        </exec>
-    </target>
-
-    <target name="install-speedR-package">
-        <exec dir="${rpkg-folder}" executable="R">
+    <target name="install-package">
+        <exec dir="E:/projects/r-forge/speedR/pkg" executable="R">
             <arg value="CMD"/>
             <arg value="INSTALL"/>
             <arg value="--no-docs"/>
@@ -182,33 +119,6 @@
         </exec>
     </target>
 
-    <target name="install-speedRlibs-package">
-        <exec dir="${rpkg-folder}" executable="R">
-            <arg value="CMD"/>
-            <arg value="INSTALL"/>
-            <arg value="--no-docs"/>
-            <arg value="--no-html"/>
-            <arg value="speedRlibs"/>
-        </exec>
-    </target>
-
-    <target name="install-speedRlibTF-package">
-        <exec dir="${rpkg-folder}" executable="R">
-            <arg value="CMD"/>
-            <arg value="INSTALL"/>
-            <arg value="--no-docs"/>
-            <arg value="--no-html"/>
-            <arg value="speedRlibTF"/>
-        </exec>
-    </target>
-
-    <target name="remove-all-packages" depends="remove-speedRlibs-package,remove-speedRlibTF-package,remove-speedR-package" />
-
-    <target name="install-all-packages" depends="install-speedRlibs-package,install-speedRlibTF-package,install-speedR-package" />
-
-
-    <target name="reinstall-package" depends="remove-speedR-package,install-speedR-package">
-
-    </target>
+    <target name="reinstall-package" depends="remove-package,install-package"/>
 
 </project>

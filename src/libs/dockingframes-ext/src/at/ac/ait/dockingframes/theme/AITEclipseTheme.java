@@ -45,13 +45,12 @@ public class AITEclipseTheme extends EclipseTheme {
        // setColorSchemeKey(AIT_ECLIPSE_COLOR_SCHEME);
         setColorScheme(new AITEclipseColorScheme());    
 
-//        setTitleFactory( new BasicDockTitleFactory(){
-//        	@Override
-//        	public void request( DockTitleRequest request ){
-//        		request.answer( new AITBasicDockTitle( request.getTarget(), request.getVersion() ) );
-//        	}
-//        }, Priority.THEME );
-
+        setTitleFactory( new BasicDockTitleFactory(){
+        	@Override
+        	public void request( DockTitleRequest request ){
+        		request.answer( new AITBasicDockTitle( request.getTarget(), request.getVersion() ) );
+        	}
+        }, Priority.THEME );
     }
 
 

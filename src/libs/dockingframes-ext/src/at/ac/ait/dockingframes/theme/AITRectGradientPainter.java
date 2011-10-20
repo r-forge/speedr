@@ -1,12 +1,12 @@
 package at.ac.ait.dockingframes.theme;
 
+import at.ac.ait.dockingframes.theme.stack.tab.AITEclipseTabPanePainter;
 import bibliothek.extension.gui.dock.theme.eclipse.OwnedRectEclipseBorder;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.EclipseTabPane;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.BorderedComponent;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.DefaultInvisibleTab;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.InvisibleTab;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.InvisibleTabPane;
-import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.LinePainter;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.RectGradientPainter;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.TabComponent;
 import bibliothek.extension.gui.dock.theme.eclipse.stack.tab.TabPainter;
@@ -28,14 +28,7 @@ public class AITRectGradientPainter extends RectGradientPainter {
         }
 
         public TabPanePainter createDecorationPainter(EclipseTabPane pane) {
-            return new LinePainter(pane){
-
-                @Override
-                public void paintForeground(Graphics g) {
-                   
-                }
-
-            };
+            return new AITEclipseTabPanePainter(pane);
         }
 
         public InvisibleTab createInvisibleTab(InvisibleTabPane pane, Dockable dockable) {
@@ -49,6 +42,13 @@ public class AITRectGradientPainter extends RectGradientPainter {
 
     public AITRectGradientPainter(EclipseTabPane pane, Dockable dockable) {
         super(pane, dockable);
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        g.setColor(colorStackTabBottom.value());
+        g.fillRect(0, 0, getWidth(), getHeight());
+
     }
 
 //    @Override
@@ -235,10 +235,9 @@ public class AITRectGradientPainter extends RectGradientPainter {
 //        g.setFont(getFont());
 //        g.drawString(dockable.getTitleText(), 5 + iconOffset, height / 2 + g.getFontMetrics().getHeight() / 2 - 2);
 //    }
-
-    @Override
-    protected void paintComponent(Graphics g) {
-//        super.paintComponent(g);
+//    @Override
+//    protected void paintComponent(Graphics g) {
+//        //super.paintComponent(g);
 //        int height = getHeight(), width = getWidth();
 //        Graphics2D g2d = (Graphics2D) g;
 //        Color lineColor = colorStackBorder.value();
@@ -325,5 +324,5 @@ public class AITRectGradientPainter extends RectGradientPainter {
 //                    break;
 //            }
 //        }
-    }
+//    }
 }

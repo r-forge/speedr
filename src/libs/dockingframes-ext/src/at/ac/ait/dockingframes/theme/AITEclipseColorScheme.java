@@ -27,6 +27,7 @@ package at.ac.ait.dockingframes.theme;
 
 import bibliothek.extension.gui.dock.theme.EclipseTheme;
 import bibliothek.extension.gui.dock.theme.eclipse.EclipseColorScheme;
+import bibliothek.extension.gui.dock.theme.eclipse.rex.RexSystemColor;
 import bibliothek.gui.DockUI;
 import bibliothek.gui.dock.themes.ColorScheme;
 import bibliothek.gui.dock.util.laf.LookAndFeelColors;
@@ -53,7 +54,7 @@ public class AITEclipseColorScheme extends EclipseColorScheme {
         setColor( "stack.tab.border.selected",          DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
         setColor( "stack.tab.border.selected.focused",  DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
         setColor( "stack.tab.border.selected.focuslost",DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
-        
+//
 //        setColor( "stack.tab.top",                      DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
 //        setColor( "stack.tab.top.selected",             DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
 //        setColor( "stack.tab.top.selected.focused",     DockUI.getColor( LookAndFeelColors.PANEL_BACKGROUND ) );
