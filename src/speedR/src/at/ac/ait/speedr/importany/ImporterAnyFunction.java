@@ -11,17 +11,7 @@ import at.ac.arcs.tablefilter.ist.ColumnSelectorOption;
 import au.com.bytecode.opencsv.CSVReader;
 import com.pensioenpage.jynx.ods2csv.ConversionException;
 import com.pensioenpage.jynx.ods2csv.Converter;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
-import java.text.SimpleDateFormat;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -117,7 +107,7 @@ public class ImporterAnyFunction {
         logger.log(Level.INFO, "model row count: {0}", model.getRowCount());
 
         ARCTable table = new ARCTable();
-        table.setNoneOptionId("");
+        table.setNoneOptionCaption("");
 
         ColumnSelectorOption[] ops = new ColumnSelectorOption[5];
         ColumnSelectorOption<ColumnType> op = new ColumnSelectorOption<ColumnType>(ColumnType.NUMERIC, ColumnSelectorOption.OptionType.MANY_TO_ONE);

@@ -79,6 +79,7 @@ import javax.swing.SwingWorker;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.jdesktop.swingx.sort.DefaultSortController;
 import org.rosuda.REngine.REXPDouble;
 import org.rosuda.REngine.REXPFactor;
 import org.rosuda.REngine.REXPGenericVector;
@@ -291,12 +292,22 @@ public class SpeedRFrame extends javax.swing.JFrame {
         arcTable.setModel(model);
         arcTable.setColumnSelectorVisible(false);
 
+        setComparators(arcTable, model);
         registerDeviceAndConverter( arcTable);
         setDefaultRendererAndEditor(arcTable);
 
         addFilterTable(arcTable, objectname);
     }
 
+    private void setComparators(ARCTable table,TableModel model){
+        for(int i=0;i<model.getColumnCount();i++){
+            if(model.getColumnClass(i) == REXPInteger.class ||
+                    model.getColumnClass(i) == REXPDouble.class){
+                table.setComparator(i, DefaultSortController.COMPARABLE_COMPARATOR);
+            }
+        }
+    }
+    
     private void registerDeviceAndConverter(ARCTable arcTable) {
         arcTable.registerFilterDevice(REXPInteger.class, numericFilterDevice);
         arcTable.registerFilterDevice(REXPDouble.class, numericFilterDevice);

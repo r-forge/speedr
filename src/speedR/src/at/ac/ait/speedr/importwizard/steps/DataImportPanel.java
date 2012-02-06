@@ -6,15 +6,8 @@
  */
 package at.ac.ait.speedr.importwizard.steps;
 
-import at.ac.ait.speedr.table.RDateTimePickerCellEditor;
 import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
-import at.ac.ait.speedr.table.POSIXctCellRenderer;
-import at.ac.ait.speedr.table.RDate;
-import at.ac.ait.speedr.table.RDatePickerCellEditor;
-import at.ac.ait.speedr.table.RDateTimeConverter;
-import at.ac.ait.speedr.table.RPOSIXct;
-import at.ac.ait.speedr.table.RTableCellEditor;
-import at.ac.ait.speedr.table.RTableCellRenderer;
+import at.ac.ait.speedr.table.*;
 import at.ac.ait.speedr.workspace.RUtil;
 import at.ac.arcs.tablefilter.ARCTable;
 import at.ac.arcs.tablefilter.cell.DateCellRenderer;
@@ -34,14 +27,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JButton;
-import javax.swing.JDialog;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingWorker;
+import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
@@ -136,7 +122,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         table.setGroupingEnabled(false);
         table.setColumnSelectorVisible(true);
 
-        table.setNoneOptionId("");
+        table.setNoneOptionCaption("");
         ColumnSelectorOption[] ops = new ColumnSelectorOption[5];
         ColumnSelectorOption<ColumnType> op = new ColumnSelectorOption<ColumnType>(ColumnType.NUMERIC, ColumnSelectorOption.OptionType.MANY_TO_ONE);
         ops[0] = op;
@@ -874,7 +860,7 @@ public class DataImportPanel extends javax.swing.JPanel {
                         if (tableModel.getColumnClass(columnIndex) == Double.class) {
                             if (tableModel.containsNonNumeric(columnIndex)) {
                                 try {
-                                    table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), columnIndex);
+                                    table.setColumnSelectorOption(ColumnType.CHARACTER, columnIndex);
                                     columnDataTypeListener.convertToText(new ColumnSelectorEvent<ColumnType>(columnIndex, null, null));
                                 } catch (ColumnSelectorVetoException ex) {
                                     Logger.getLogger(DataImportPanel.class.getName()).log(Level.SEVERE, null, ex);
@@ -929,7 +915,7 @@ public class DataImportPanel extends javax.swing.JPanel {
 
                     table.removeColumnSelectorListener(columnDataTypeListener);
                     try {
-                        table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), 0);
+                        table.setColumnSelectorOption(ColumnType.CHARACTER, 0);
                         columnDataTypeListener.convertToText(new ColumnSelectorEvent<ColumnType>(0, null, null));
                         table.setColumnSelectorEnabled(0, false);
                     } catch (ColumnSelectorVetoException ex) {
@@ -973,16 +959,16 @@ public class DataImportPanel extends javax.swing.JPanel {
                         }
                         for (int i = 0; i < tableModel.getColumnCount(); i++) {
                             if (tableModel.getColumnClass(i) == Double.class) {
-                                table.setColumnSelectorOption(ColumnType.NUMERIC.toString(), i);
+                                table.setColumnSelectorOption(ColumnType.NUMERIC, i);
                                 colClasses[i] = ColumnType.NUMERIC.toString().toLowerCase();
                             } else if (tableModel.getColumnClass(i) == String.class) {
-                                table.setColumnSelectorOption(ColumnType.CHARACTER.toString(), i);
+                                table.setColumnSelectorOption(ColumnType.CHARACTER, i);
                                 colClasses[i] = ColumnType.CHARACTER.toString().toLowerCase();
                             } else if (tableModel.getColumnClass(i) == RDate.class) {
-                                table.setColumnSelectorOption(ColumnType.DATE.toString(), i);
+                                table.setColumnSelectorOption(ColumnType.DATE, i);
                                 colClasses[i] = ColumnType.DATE.toString();
                             } else if (tableModel.getColumnClass(i) == RPOSIXct.class) {
-                                table.setColumnSelectorOption(ColumnType.POSIXCT.toString(), i);
+                                table.setColumnSelectorOption(ColumnType.POSIXCT, i);
                                 colClasses[i] = ColumnType.POSIXCT.toString();
                             }
                         }

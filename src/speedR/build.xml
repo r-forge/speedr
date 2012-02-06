@@ -88,7 +88,6 @@
         <exec dir="E:/projects/r-forge/speedR/pkg" executable="R">
             <arg value="CMD"/>
             <arg value="build"/>
-            <arg value="--binary"/>
             <arg value="speedR"/>
         </exec>
     </target>
@@ -113,8 +112,6 @@
         <exec dir="E:/projects/r-forge/speedR/pkg" executable="R">
             <arg value="CMD"/>
             <arg value="INSTALL"/>
-            <arg value="--no-docs"/>
-            <arg value="--no-html"/>
             <arg value="speedR"/>
         </exec>
     </target>
