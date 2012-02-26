@@ -21,8 +21,6 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import javax.swing.table.TableModel;
 import org.ait.table.filter.FilterExpressionLexer;
 import org.ait.table.filter.FilterExpressionParser;
@@ -72,7 +70,6 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     private int colstartIndex = 1;
     private int colendIndex = 0;
     private String[] colClasses;
-    
     // rowIndex -> columnIndex + values
     private HashMap<Integer, HashMap<Integer, Object>> cellUpdates =
             new HashMap<Integer, HashMap<Integer, Object>>();
@@ -167,7 +164,6 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
 
             List<FilterColumnInfo> columns = filterRowInfo.getColumns();
             if (columns.isEmpty()) {
-                filterfunction.setAttribute("filterlevels", "(TRUE)");
                 continue;
             }
             for (FilterColumnInfo filterColumnInfo : columns) {
@@ -194,7 +190,9 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
                     // begin parsing at rule formula
                     formula_return formula = parser.formula();
 
-                    /** WALK RESULTING TREE **/
+                    /**
+                     * WALK RESULTING TREE *
+                     */
                     // get tree from parser
                     CommonTree tree = (CommonTree) formula.getTree();
 
@@ -228,7 +226,11 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
             filterfunction.setAttribute("filterlevels", filterlevel);
         }
 
-        filtercode = filterfunction.toString();
+        if (filterfunction.getAttribute("filterlevels") == null) {
+            filtercode = "";
+        } else {
+            filtercode = filterfunction.toString();            
+        }
         fireStateChanged();
     }
 
@@ -475,12 +477,12 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
 
         for (Integer rowIndex : cellUpdates.keySet()) {
             cellUpdates.get(rowIndex).remove(realColumnIndex);
-            if(cellUpdates.get(rowIndex).isEmpty()){
+            if (cellUpdates.get(rowIndex).isEmpty()) {
                 todelete.add(rowIndex);
             }
         }
 
-        for(Integer row:todelete){
+        for (Integer row : todelete) {
             cellUpdates.remove(row);
         }
 

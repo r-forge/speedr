@@ -392,9 +392,9 @@ public class ImportTableModel extends AbstractTableModel {
         if (this.hasRownames != hasRownames && maxColumnCount > 1) {
             boolean oldValue = this.hasRownames;
             this.hasRownames = hasRownames;
-            if(this.hasRownames){
+            if (this.hasRownames) {
                 setColEnd(this.colEnd - 1);
-            }else{
+            } else {
                 setColEnd(this.colEnd + 1);
             }
 //            if (this.colEnd > 0) {
@@ -535,13 +535,13 @@ public class ImportTableModel extends AbstractTableModel {
             }
             String val;
             for (int rowIndex = 0; rowIndex < getRowCount(); rowIndex++) {
-                if (getValueAt(rowIndex, columnIndex) == null){
+                if (getValueAt(rowIndex, columnIndex) == null) {
                     allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = null;
-                }else{
+                } else {
                     val = StringUtils.trimToNull(getValueAt(rowIndex, columnIndex).toString());
-                    if(val == null || val.equalsIgnoreCase("NA")){
+                    if (val == null || val.equalsIgnoreCase("NA")) {
                         allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = null;
-                    }else{
+                    } else {
                         allData.get(getRealRowIndex(rowIndex))[getRealColumnIndex(columnIndex)] = NumberUtils.createDouble(val);
                     }
                 }
@@ -599,7 +599,9 @@ public class ImportTableModel extends AbstractTableModel {
         }
 
         for (int i = 0; i < allData.size(); i++) {
-            allData.get(i)[getRealColumnIndex(columnIndex)] = columndata.get(i);
+            if (allData.get(i).length > getRealColumnIndex(columnIndex)) {
+                allData.get(i)[getRealColumnIndex(columnIndex)] = columndata.get(i);
+            }
         }
 
         if (getColumnClass(columnIndex) != String.class) {

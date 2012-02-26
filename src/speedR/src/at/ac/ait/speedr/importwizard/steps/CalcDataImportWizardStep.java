@@ -1,31 +1,24 @@
 package at.ac.ait.speedr.importwizard.steps;
 
 import at.ac.ait.speedr.WorkspaceView;
-import com.pensioenpage.jynx.ods2csv.Converter;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import javax.swing.JOptionPane;
-import javax.swing.SwingWorker;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import at.ac.ait.speedr.importwizard.WizardPanel;
 import at.ac.ait.speedr.importwizard.WizardValidationException;
 import at.ac.ait.speedr.importwizard.tablemodel.ImportTableModelHelper;
 import au.com.bytecode.opencsv.CSVReader;
+import com.pensioenpage.jynx.ods2csv.Converter;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.io.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.SwingWorker;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 /**
  *
@@ -50,15 +43,20 @@ public class CalcDataImportWizardStep implements
     }
 
     public void readSettings(WizardPanel settings) {
+        if (impPanel.getTableModel().getMaxColumnCount() > 0) {
+            impPanel.resetRowAndColumnsMaxAndMin();
+            impPanel.getTableModel().clearAll();
+        }
+        
         this.settings = settings;
         if (settings.getProperty(DataSourceWizardStep.PROP_DATASOURCE) == DataSourcePanel.PROP_FILE_DATASOURCE) {
-            getComponent().setConfigurationPanelEnabled(false);
+            impPanel.setConfigurationPanelEnabled(false);
             dataFile = (File) settings.getProperty(DataSourceWizardStep.PROP_FILE);
         }
     }
 
     public void storeSettings(WizardPanel settings) {
-        settings.putProperty(DataImportPanel.PROP_VARIABLENAME, getComponent().getVariableName());
+        settings.putProperty(DataImportPanel.PROP_VARIABLENAME, impPanel.getVariableName());
     }
 
     public boolean isValid() {
@@ -96,7 +94,7 @@ public class CalcDataImportWizardStep implements
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName() == DataImportPanel.PROP_VARIABLENAME) {
-            String varname = getComponent().getVariableName();
+            String varname = impPanel.getVariableName();
 
             if (varname.equals("") || Character.isDigit(varname.charAt(0))
                     || !varname.equals(varname.replaceAll("[ -+*/\\()=!~`@#$%^&*<>,?;:\"\']", "."))) {
@@ -110,14 +108,14 @@ public class CalcDataImportWizardStep implements
     }
 
     public void validate() throws WizardValidationException {
-        String varname = getComponent().getVariableName();
+        String varname = impPanel.getVariableName();
         if (varname == null || varname.trim().equals("")) {
             throw new WizardValidationException("Please set a variable name");
         }
 
         if (WorkspaceView.getInstance().hasVariable(varname)) {
             int showConfirmDialog =
-                    JOptionPane.showConfirmDialog(getComponent(), "A variable with the name "
+                    JOptionPane.showConfirmDialog(impPanel, "A variable with the name "
                     + varname + " exsists already!\n" + "Do you want to replace it?");
             if (showConfirmDialog != JOptionPane.YES_OPTION) {
                 throw new WizardValidationException("Variable name exists");
@@ -136,7 +134,7 @@ public class CalcDataImportWizardStep implements
             excelProcessor.start();
 
             CSVReaderWorker worker = new CSVReaderWorker(pIn,
-                    getComponent().getTableModel());
+                    impPanel.getTableModel());
             worker.execute();
             worker.get();
         } catch (Exception ex) {
@@ -220,7 +218,7 @@ public class CalcDataImportWizardStep implements
         @Override
         protected void done() {
             setValid(true);
-            getComponent().setConfigurationPanelEnabled(true);
+            impPanel.setConfigurationPanelEnabled(true);
             tableModel.convertColumnsToNumericIfPossible();
         }
     }

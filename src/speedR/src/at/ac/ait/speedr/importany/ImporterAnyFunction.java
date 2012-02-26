@@ -127,22 +127,22 @@ public class ImporterAnyFunction {
         int i = 0;
         if (model.hasRowNames()) {
             i = 1;
-            table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER.toString(), i);
+            table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER, i);
             model.convertToText(i, modelhelper.getColumnData(i));
         }
 
         for (int j = 0; i < model.getColumnCount(); i++, j++) {
             if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.NUMERIC.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.NUMERIC.toString(), i);
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.NUMERIC, i);
                 model.convertToNumeric(i);
             } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.CHARACTER.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER.toString(), i);
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER, i);
                 model.convertToText(i, modelhelper.getColumnData(i));
             } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.FACTOR.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.FACTOR.toString(), i);
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.FACTOR, i);
                 model.convertToText(i, modelhelper.getColumnData(i));
             } else if (columnClasses[j].contains(DataImportPanel.ColumnType.DATE.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.DATE.toString(), i);
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.DATE, i);
                 if (columnClasses[j].contains("=")) {
                     model.convertToDate(i,
                             new String[]{RUtil.convertPatternFromRFormat(
@@ -151,7 +151,7 @@ public class ImporterAnyFunction {
                     model.convertToDate(i, RUtil.parseDatePattern);
                 }
             } else if (columnClasses[j].contains(DataImportPanel.ColumnType.POSIXCT.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.POSIXCT.toString(), i);
+                table.setColumnSelectorOption(DataImportPanel.ColumnType.POSIXCT, i);
 
                 if (columnClasses[j].contains("=")) {
                     model.convertToPOSIXct(i,

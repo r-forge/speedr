@@ -5,55 +5,18 @@
  */
 package at.ac.ait.speedr;
 
-import at.ac.ait.speedr.codegen.ImportAndFilterCodeGen;
-import at.ac.ait.speedr.codegen.FilterFunctionCodeGen;
 import at.ac.ait.dockingframes.theme.AITEclipseTheme;
-import at.ac.ait.speedr.importwizard.WizardPanel;
-import bibliothek.gui.dock.common.event.CVetoClosingEvent;
-import java.beans.PropertyChangeEvent;
-import at.ac.arcs.tablefilter.ARCTable;
-import bibliothek.gui.dock.common.CControl;
-import bibliothek.gui.dock.common.CLocation;
-import bibliothek.gui.dock.common.CWorkingArea;
-import bibliothek.gui.dock.common.DefaultMultipleCDockable;
-import bibliothek.gui.dock.common.DefaultSingleCDockable;
-import bibliothek.gui.dock.common.EmptyMultipleCDockableFactory;
-import bibliothek.gui.dock.common.MultipleCDockable;
-import bibliothek.gui.dock.common.MultipleCDockableFactory;
-import bibliothek.gui.dock.common.MultipleCDockableLayout;
-import bibliothek.gui.dock.common.action.CButton;
-import bibliothek.gui.dock.common.action.predefined.CCloseAction;
-import bibliothek.gui.dock.common.action.predefined.CNormalizeAction;
-import bibliothek.gui.dock.common.event.CFocusListener;
-import bibliothek.gui.dock.common.event.CVetoClosingListener;
-import bibliothek.gui.dock.common.intern.CDockable;
-import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
-import java.awt.BorderLayout;
-import java.beans.PropertyChangeListener;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.ImageIcon;
-import javax.swing.JOptionPane;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.RTextScrollPane;
-import org.rosuda.REngine.REXPMismatchException;
-import org.rosuda.REngine.REngineException;
+import at.ac.ait.speedr.codegen.FilterFunctionCodeGen;
+import at.ac.ait.speedr.codegen.ImportAndFilterCodeGen;
 import at.ac.ait.speedr.importwizard.WizardIterator;
+import at.ac.ait.speedr.importwizard.WizardPanel;
 import at.ac.ait.speedr.importwizard.steps.DataImportPanel;
 import at.ac.ait.speedr.importwizard.steps.DataSourceWizardStep;
-import at.ac.ait.speedr.table.POSIXctCellRenderer;
-import at.ac.ait.speedr.table.RDate;
-import at.ac.ait.speedr.table.RDateTimeConverter;
-import at.ac.ait.speedr.table.RPOSIXct;
+import at.ac.ait.speedr.table.*;
 import at.ac.ait.speedr.table.model.RAbstractTableModel;
-import at.ac.ait.speedr.table.RTableCellEditor;
-import at.ac.ait.speedr.table.RTableCellRenderer;
 import at.ac.ait.speedr.workspace.RConnection;
 import at.ac.ait.speedr.workspace.RUtil;
+import at.ac.arcs.tablefilter.ARCTable;
 import at.ac.arcs.tablefilter.cell.DateCellRenderer;
 import at.ac.arcs.tablefilter.events.FilterEvent;
 import at.ac.arcs.tablefilter.events.FilterListener;
@@ -62,28 +25,43 @@ import at.ac.arcs.tablefilter.filtermodel.NumericFilterDevice;
 import at.ac.arcs.tablefilter.filtermodel.StringFilterDevice;
 import au.com.bytecode.opencsv.CSVWriter;
 import bibliothek.gui.DockTheme;
+import bibliothek.gui.dock.common.*;
 import bibliothek.gui.dock.common.action.CAction;
+import bibliothek.gui.dock.common.action.CButton;
 import bibliothek.gui.dock.common.action.CMenu;
+import bibliothek.gui.dock.common.action.predefined.CCloseAction;
+import bibliothek.gui.dock.common.action.predefined.CNormalizeAction;
+import bibliothek.gui.dock.common.event.CFocusListener;
+import bibliothek.gui.dock.common.event.CVetoClosingEvent;
+import bibliothek.gui.dock.common.event.CVetoClosingListener;
+import bibliothek.gui.dock.common.intern.CDockable;
 import bibliothek.gui.dock.common.theme.CDockThemeFactory;
 import bibliothek.gui.dock.common.theme.CEclipseTheme;
 import bibliothek.gui.dock.common.theme.ThemeMap;
 import bibliothek.gui.dock.themes.ThemeFactory;
 import bibliothek.gui.dock.themes.ThemePropertyFactory;
+import com.jgoodies.looks.plastic.Plastic3DLookAndFeel;
+import java.awt.BorderLayout;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
-import javax.swing.JFileChooser;
-import javax.swing.SwingWorker;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.*;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 import org.jdesktop.swingx.sort.DefaultSortController;
-import org.rosuda.REngine.REXPDouble;
-import org.rosuda.REngine.REXPFactor;
-import org.rosuda.REngine.REXPGenericVector;
-import org.rosuda.REngine.REXPInteger;
+import org.rosuda.REngine.*;
 
 /**
  *
@@ -151,7 +129,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("speedR");
-        setMinimumSize(new java.awt.Dimension(850, 650));
+        setMinimumSize(new java.awt.Dimension(880, 650));
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -415,7 +393,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
             importandfiltercodegen.addChangeListener(new ChangeListener() {
 
                 public void stateChanged(ChangeEvent e) {
-                    textArea.setText(importandfiltercodegen.getImportAndFilterCode());
+                    textArea.setText(importandfiltercodegen.getImportAndFilterCode().trim());
                 }
             });
 
@@ -475,7 +453,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
                     activeDockCloaseAction.close(dockable);
                 } else if (DataSourceWizardStep.PROP_FILE.equals(evt.getPropertyName())) {
                     importandfiltercodegen.setFile(evt.getNewValue().toString().replaceAll("\\\\", "/"));
-                    textArea.setText(importandfiltercodegen.getImportAndFilterCode());
+                    textArea.setText(importandfiltercodegen.getImportAndFilterCode().trim());
                 } else if (evt.getPropertyName() == WizardPanel.PROP_STATE_CHANGED
                         && evt.getNewValue() == WizardPanel.PROP_STATE_NEXT) {
                     importandfiltercodegen.setModel(((DataImportPanel) iterator.current().getComponent()).getTableModel());
@@ -547,7 +525,7 @@ public class SpeedRFrame extends javax.swing.JFrame {
         public void filterChanged(FilterEvent event) {
             String filterFunctionCode =
                     codegen.getFilterFunctionCode(functionname, event.getFilterInfo(), hasRownames, model);
-            textArea.setText(filterFunctionCode);
+            textArea.setText(filterFunctionCode.trim());
         }
     }
 

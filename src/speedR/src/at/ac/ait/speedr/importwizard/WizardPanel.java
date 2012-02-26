@@ -12,14 +12,7 @@ import java.awt.event.ActionListener;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.ImageIcon;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.Timer;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.rosuda.REngine.REXPGenericVector;
@@ -81,7 +74,7 @@ public class WizardPanel extends javax.swing.JPanel {
             setUpStep();
         }
 
-        //TODO: i needed to add something to the messagepanel, which is removed
+        //TODO: i need to add something to the messagepanel, which is removed
         //at the first call to the setMessage. Otherwise the first message did not
         //displayed itself, other said, did not repainted itself.
         feedbackpanel.add(messageLabel, BorderLayout.CENTER);

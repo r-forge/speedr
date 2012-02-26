@@ -55,7 +55,6 @@ public class FilterFunctionCodeGen {
 
             List<FilterColumnInfo> columns = filterRowInfo.getColumns();
             if (columns.isEmpty()) {
-                filterfunction.setAttribute("filterlevels", "(TRUE)");
                 continue;
             }
             for (FilterColumnInfo filterColumnInfo : columns) {
@@ -82,7 +81,9 @@ public class FilterFunctionCodeGen {
                     // begin parsing at rule formula
                     formula_return formula = parser.formula();
 
-                    /** WALK RESULTING TREE **/
+                    /**
+                     * WALK RESULTING TREE *
+                     */
                     // get tree from parser
                     CommonTree tree = (CommonTree) formula.getTree();
 
@@ -103,15 +104,15 @@ public class FilterFunctionCodeGen {
                         rcodegen.setColumnIndex(tableModel.getColumnIndexCode(col));
                     }
 
-                    if(tableModel instanceof RDataFrameTableModel){
+                    if (tableModel instanceof RDataFrameTableModel) {
                         rcodegen.setDataframe(true);
                         rcodegen.setDataframeColumnIndex(tableModel.getColumnName(col));
                     }
 
-                    if(tableModel.getColumnClass(col) == RPOSIXct.class){
+                    if (tableModel.getColumnClass(col) == RPOSIXct.class) {
                         rcodegen.setPOSIXct(true);
                     }
-                    
+
                     rcodegen.setTemplateLib(stg);
 
                     rcode_return rcode = rcodegen.rcode();
@@ -123,6 +124,10 @@ public class FilterFunctionCodeGen {
             }
             filterfunction.setAttribute("filterlevels", filterlevel);
         }
-        return filterfunction.toString();
+        if (filterfunction.getAttribute("filterlevels") == null) {
+            return "";
+        } else {
+            return filterfunction.toString();
+        }
     }
 }

@@ -1,5 +1,6 @@
 package at.ac.ait.speedr.importwizard.steps;
 
+import at.ac.ait.speedr.importwizard.WizardPanel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -9,7 +10,6 @@ import java.util.Iterator;
 import java.util.Set;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import at.ac.ait.speedr.importwizard.WizardPanel;
 
 /**
  *

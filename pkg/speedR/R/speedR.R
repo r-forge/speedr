@@ -62,48 +62,81 @@ speedR <- function(maxmemory = NULL,...){
 	)
 }
 
-speedR.importany<-function(file=NULL,rowstart=NULL,rowend=NULL,colstart=NULL,colend=NULL,
-						   hasRowNames = FALSE, rowNamesColumnIndex = NULL,hasColumnNames = FALSE, 
-						   columnNamesRowIndex = NULL, separator = NULL, quote = NULL,colClasses = NULL, maxmemory = NULL,...){	
+speedR.importany <- 
+		function(file=NULL,rowstart=NULL,rowend=NULL,colstart=NULL,colend=NULL,
+				hasRowNames = FALSE, rowNamesColumnIndex = NULL,hasColumnNames = FALSE, 
+				columnNamesRowIndex = NULL, separator = NULL, quote = NULL,colClasses = NULL, 
+				maxmemory = NULL,...){	
     
 	
 	speedR.init(maxmemory,...)
 	
 	
-	if(is.null(file)) stop("Please give a valid file path argument")
+	if(is.null(file)) 
+		stop("Please give a valid file path argument")
 	
-	if(! file.exists(file)) stop("file do not exists")
+	if(! file.exists(file))
+		stop("file do not exists")
 	
-	if(is.null(rowstart)) rowstart=.jnull("java/lang/Integer") else rowstart = .jnew("java/lang/Integer",as.character(rowstart))
+	if(is.null(rowstart)) 
+		rowstart=.jnull("java/lang/Integer") 
+	else 
+		rowstart = .jnew("java/lang/Integer",as.character(rowstart))
 	
-	if(is.null(rowend)) rowend=.jnull("java/lang/Integer") else rowend = .jnew("java/lang/Integer",as.character(rowend))
+	if(is.null(rowend)) 
+		rowend=.jnull("java/lang/Integer") 
+	else 
+		rowend = .jnew("java/lang/Integer",as.character(rowend))
 	
-	if(is.null(colstart)) colstart=.jnull("java/lang/Integer") else colstart = .jnew("java/lang/Integer",as.character(colstart))
+	if(is.null(colstart)) 
+		colstart=.jnull("java/lang/Integer") 
+	else 
+		colstart = .jnew("java/lang/Integer",as.character(colstart))
 	
-	if(is.null(colend)) colend=.jnull("java/lang/Integer") else colend = .jnew("java/lang/Integer",as.character(colend))
+	if(is.null(colend)) 
+		colend=.jnull("java/lang/Integer") 
+	else 
+		colend = .jnew("java/lang/Integer",as.character(colend))
 	
-	if(hasRowNames) hasRowNames = .jnew("java/lang/Boolean",TRUE) else hasRowNames = .jnew("java/lang/Boolean",FALSE)
+	if(hasRowNames) 
+		hasRowNames = .jnew("java/lang/Boolean",TRUE) 
+	else 
+		hasRowNames = .jnew("java/lang/Boolean",FALSE)
 	
-	if(is.null(rowNamesColumnIndex)) rowNamesColumnIndex = .jnull("java/lang/Integer") else rowNamesColumnIndex = .jnew("java/lang/Integer",as.character(rowNamesColumnIndex))
+	if(is.null(rowNamesColumnIndex)) 
+		rowNamesColumnIndex = .jnull("java/lang/Integer") 
+	else 
+		rowNamesColumnIndex = .jnew("java/lang/Integer",as.character(rowNamesColumnIndex))	
 	
-	#if(rowNamesNo < 1) stop ("the index of the column containing the row names must be equal or greater than 1.") 
+	if(hasColumnNames) 
+		hasColumnNames = .jnew("java/lang/Boolean",TRUE) 
+	else 
+		hasColumnNames = .jnew("java/lang/Boolean",FALSE)
 	
+	if(is.null(columnNamesRowIndex)) 
+		columnNamesRowIndex = .jnull("java/lang/Integer") 
+	else 
+		columnNamesRowIndex = .jnew("java/lang/Integer",as.character(columnNamesRowIndex))
 	
-	if(hasColumnNames) hasColumnNames = .jnew("java/lang/Boolean",TRUE) else hasColumnNames = .jnew("java/lang/Boolean",FALSE)
+	if(is.null(separator)) 
+		separator = .jnull("java/lang/String")
 	
-	if(is.null(columnNamesRowIndex)) columnNamesRowIndex = .jnull("java/lang/Integer") else columnNamesRowIndex = .jnew("java/lang/Integer",as.character(columnNamesRowIndex))
-	
-	if(is.null(separator)) separator = .jnull("java/lang/String")
-	
-	if(is.null(quote)) quote = .jnull("java/lang/String")
+	if(is.null(quote)) 
+		quote = .jnull("java/lang/String")
 
-	if(is.null(colClasses)) colClasses = .jarray(character(0)) else colClasses = .jarray(colClasses)
+	if(is.null(colClasses)) 
+		colClasses = .jarray(character(0)) 
+	else 
+		colClasses = .jarray(colClasses)
     
 	
 	
 	tryCatch(
-	.jcall("at/ac/ait/speedr/importany/ImporterAnyFunction","V",method="importany",file,rowstart,rowend,colstart,colend,hasRowNames,rowNamesColumnIndex,hasColumnNames,columnNamesRowIndex,separator,quote,colClasses),
-	Exception = function(e){
+		.jcall("at/ac/ait/speedr/importany/ImporterAnyFunction","V",
+				method="importany",file,rowstart,rowend,colstart,colend,
+				hasRowNames,rowNamesColumnIndex,hasColumnNames,
+				columnNamesRowIndex,separator,quote,colClasses),			
+		Exception = function(e){
 			e$printStackTrace()
 		}
 	)
@@ -121,7 +154,9 @@ speedR.importany<-function(file=NULL,rowstart=NULL,rowend=NULL,colstart=NULL,col
 
 
 .reloadworkspace <- function(){
-	supportedtypes = c("character","numeric","array","integer","table","matrix","data.frame","double","list","pairlist","Date","POSIXct")
+	supportedtypes = c("character","numeric","array","integer","table","matrix",
+						"data.frame","double","list","pairlist","Date","POSIXct")
+						
 	objects <- ls(pos=1)
     result <- NULL;
     if (length(objects) > 0){
