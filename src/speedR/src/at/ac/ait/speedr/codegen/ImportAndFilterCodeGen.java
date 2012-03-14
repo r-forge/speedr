@@ -229,7 +229,7 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
         if (filterfunction.getAttribute("filterlevels") == null) {
             filtercode = "";
         } else {
-            filtercode = filterfunction.toString();            
+            filtercode = filterfunction.toString();
         }
         fireStateChanged();
     }
@@ -248,12 +248,14 @@ public class ImportAndFilterCodeGen implements FilterListener, DataImportPanelUs
     }
 
     public void separatorChanged(String newvalue) {
-        this.delimiterST = import_stg.getInstanceOf("separator");
-        this.delimiterST.setAttribute("value", newvalue);
-
         cellUpdates.clear();
-
-        fireStateChanged();
+        if (newvalue == null) {
+            this.delimiterST = null;
+        } else {
+            this.delimiterST = import_stg.getInstanceOf("separator");
+            this.delimiterST.setAttribute("value", newvalue);
+            fireStateChanged();
+        }
     }
 
     public void quoteChanged(String newvalue) {

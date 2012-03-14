@@ -124,7 +124,11 @@ public class CSVDataImportWizardStep implements
         if (evt.getPropertyName() == DataImportPanel.PROP_DELIMITER) {
             setValid(false);
             getComponent().setConfigurationPanelEnabled(false);
-            setDelimiter((Character) evt.getNewValue());
+            if (evt.getNewValue() == null) {
+                setDelimiter((char) 0);
+            } else {
+                setDelimiter((Character) evt.getNewValue());
+            }
 
             try {
                 reRead();
@@ -370,7 +374,7 @@ public class CSVDataImportWizardStep implements
         }
 
         private void determineCsvSettings(String lines) throws IOException {
-            char[] delimiters = {',', ';', '\t', ' '};
+            char[] delimiters = {',', ';', '\t', ' ', '\0'};
             char[] qualifiers = {'"', '\'', '\0'};
 
             StringReader stringreader;
@@ -431,7 +435,7 @@ public class CSVDataImportWizardStep implements
 
                 hasColumnNames = true;
                 hasRowNames = true;
-            }else if(((String) settings.getProperty(DataSourceWizardStep.PROP_EXTENSION)).equals("csv")){
+            } else if (((String) settings.getProperty(DataSourceWizardStep.PROP_EXTENSION)).equals("csv")) {
                 hasColumnNames = true;
             }
         }
@@ -492,7 +496,7 @@ public class CSVDataImportWizardStep implements
         protected Object doInBackground() throws Exception {
             try {
 
-                CSVReader reader = new CSVReader(new InputStreamReader(in), getDelimiter(), getQualifier());
+                CSVReader reader = new CSVReader(new InputStreamReader(in), getDelimiter(), getQualifier(), '\0');
                 ImportTableModelHelper modelhelper = new ImportTableModelHelper();
                 String[] nextLine;
                 int line = 0;
@@ -502,7 +506,7 @@ public class CSVDataImportWizardStep implements
                     line++;
                 }
                 modelhelper.close();
-                impPanel.setImportTableModelHelper(modelhelper);
+                getComponent().setImportTableModelHelper(modelhelper);
             } catch (IOException ex) {
                 logger.log(Level.WARNING, "Unexpected end of the swingworker", ex);
                 settings.putProperty(WizardPanel.PROP_ERROR_MESSAGE, ex.getMessage());
@@ -535,6 +539,6 @@ public class CSVDataImportWizardStep implements
     private void outOfMemoryHandle() {
         isStopped = true;
         settings.putProperty(WizardPanel.PROP_WARNING_MESSAGE, "Out of available memory!");
-        JOptionPane.showMessageDialog(impPanel, "Out of memory!\nPlease restart R and call speedR with an increased value in Mb!");
+        JOptionPane.showMessageDialog(getComponent(), "Out of memory!\nPlease restart R and call speedR with an increased value in Mb!");
     }
 }

@@ -182,10 +182,8 @@ public class DataImportPanel extends javax.swing.JPanel {
         rowsEnd.setEnabled(enabled);
         colStart.setEnabled(enabled);
         colEnd.setEnabled(enabled);
-        cb_ColumnNames.setEnabled(enabled);
-        if (tableModel.getMaxColumnCount() != 1) {
-            cb_RowNames.setEnabled(enabled);
-        }
+        cb_ColumnNames.setEnabled(enabled && tableModel.getRowCount() > 1);
+        cb_RowNames.setEnabled(enabled && tableModel.getColumnCount() > 1);
         rowNamesColumnIndex.setEnabled(cb_RowNames.isSelected());
 
         variablename.setEditable(enabled);
@@ -194,6 +192,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         if (enabled) {
             updateEnds = false;
             colEnd.setValue(tableModel.getColEnd() + 1);
+
             if (tableModel.hasRowNames()) {
                 ((SpinnerNumberModel) colEnd.getModel()).setMaximum(tableModel.getMaxColumnCount() - 1);
             } else {
@@ -247,6 +246,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         rb_Space = new javax.swing.JRadioButton();
         rb_OtherQuote = new javax.swing.JRadioButton();
         tf_otherQuote = new javax.swing.JTextField();
+        rb_NoDelimiter = new javax.swing.JRadioButton();
         jPanel1 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         cb_ColumnNames = new javax.swing.JCheckBox();
@@ -357,46 +357,53 @@ public class DataImportPanel extends javax.swing.JPanel {
         tf_otherQuote.setEditable(false);
         tf_otherQuote.setDocument(new QuoteDocument());
 
+        delimiterButtonGroup.add(rb_NoDelimiter);
+        rb_NoDelimiter.setText("none");
+        rb_NoDelimiter.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rb_NoDelimiterActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout configurationPanelLayout = new javax.swing.GroupLayout(configurationPanel);
         configurationPanel.setLayout(configurationPanelLayout);
         configurationPanelLayout.setHorizontalGroup(
             configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jLabel5)
             .addGroup(configurationPanelLayout.createSequentialGroup()
                 .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel5)
                     .addGroup(configurationPanelLayout.createSequentialGroup()
-                        .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(configurationPanelLayout.createSequentialGroup()
-                                .addGap(10, 10, 10)
-                                .addComponent(jLabel7))
-                            .addGroup(configurationPanelLayout.createSequentialGroup()
-                                .addContainerGap()
-                                .addComponent(jLabel8)))
+                        .addGap(10, 10, 10)
+                        .addComponent(jLabel7))
+                    .addGroup(configurationPanelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel8)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rb_Tab)
+                    .addComponent(rb_DoubleQuote))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rb_SingleQuote)
+                    .addComponent(rb_Semicolon))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(rb_Comma)
+                    .addComponent(rb_NoQuote))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(configurationPanelLayout.createSequentialGroup()
+                        .addComponent(rb_Space)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rb_Tab)
-                            .addComponent(rb_DoubleQuote))
+                        .addComponent(rb_NoDelimiter)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rb_SingleQuote)
-                            .addComponent(rb_Semicolon))
+                        .addComponent(rb_OtherDelimiter)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(rb_Comma)
-                            .addComponent(rb_NoQuote))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(configurationPanelLayout.createSequentialGroup()
-                                .addComponent(rb_Space)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(rb_OtherDelimiter)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tf_OtherDelimiter, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(configurationPanelLayout.createSequentialGroup()
-                                .addComponent(rb_OtherQuote)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(tf_otherQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)))))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addComponent(tf_OtherDelimiter, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(configurationPanelLayout.createSequentialGroup()
+                        .addComponent(rb_OtherQuote)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(tf_otherQuote, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))))
         );
         configurationPanelLayout.setVerticalGroup(
             configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -410,7 +417,8 @@ public class DataImportPanel extends javax.swing.JPanel {
                     .addComponent(rb_Comma)
                     .addComponent(rb_Space)
                     .addComponent(rb_OtherDelimiter)
-                    .addComponent(tf_OtherDelimiter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(tf_OtherDelimiter, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(rb_NoDelimiter))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(configurationPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel8)
@@ -741,9 +749,11 @@ public class DataImportPanel extends javax.swing.JPanel {
 
     private void rowNamesColumnIndexStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rowNamesColumnIndexStateChanged
         int newvalue = (Integer) rowNamesColumnIndex.getValue();
-        tableModel.setRowNamesColumnIndex(newvalue - 1);
-        if (configPanelEnabled) {
-            useractionlistener.rowNamesNoChanged(newvalue);
+        if ((newvalue - 1) != tableModel.getRownamesColumnIndex()) { // in the tablemodel index starts with 0
+            tableModel.setRowNamesColumnIndex(newvalue - 1);
+            if (configPanelEnabled) {
+                useractionlistener.rowNamesNoChanged(newvalue);
+            }
         }
     }//GEN-LAST:event_rowNamesColumnIndexStateChanged
 
@@ -772,6 +782,13 @@ public class DataImportPanel extends javax.swing.JPanel {
         tf_otherQuote.setEnabled(rb_OtherQuote.isSelected());
     }//GEN-LAST:event_rb_OtherQuoteItemStateChanged
 
+    private void rb_NoDelimiterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rb_NoDelimiterActionPerformed
+        if (configPanelEnabled) {
+            useractionlistener.separatorChanged(null);
+        }
+        firePropertyChange(PROP_DELIMITER, null, null);
+    }//GEN-LAST:event_rb_NoDelimiterActionPerformed
+
     public void setDelimiter(char delimiter) {
         if (delimiter == ',') {
             rb_Comma.setSelected(true);
@@ -781,6 +798,8 @@ public class DataImportPanel extends javax.swing.JPanel {
             rb_Tab.setSelected(true);
         } else if (delimiter == ' ') {
             rb_Space.setSelected(true);
+        } else if (delimiter == '\0') {
+            rb_NoDelimiter.setSelected(true);
         } else if (!tf_OtherDelimiter.getText().equals("" + delimiter)) {
             tf_OtherDelimiter.setText("" + delimiter);
         }
@@ -1223,6 +1242,7 @@ public class DataImportPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup quoteButtonGroup;
     private javax.swing.JRadioButton rb_Comma;
     private javax.swing.JRadioButton rb_DoubleQuote;
+    private javax.swing.JRadioButton rb_NoDelimiter;
     private javax.swing.JRadioButton rb_NoQuote;
     private javax.swing.JRadioButton rb_OtherDelimiter;
     private javax.swing.JRadioButton rb_OtherQuote;
@@ -1266,6 +1286,7 @@ public class DataImportPanel extends javax.swing.JPanel {
         }
 
         public void rowNamesNoChanged(int newvalue) {
+            System.out.println("ss");
         }
 
         public void variableNameChanged(String newvalue) {

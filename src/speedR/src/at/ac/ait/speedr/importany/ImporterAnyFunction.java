@@ -47,9 +47,7 @@ public class ImporterAnyFunction {
             fileExtension = file.substring(index + 1);
         }
 
-        logger.log(Level.INFO, "file: {0}", file);
-
-        ImportTableModel model = null;
+        ImportTableModel model;
         modelhelper = new ImportTableModelHelper();
         try {
             if (fileExtension.equals("xlsx")) {
@@ -69,43 +67,51 @@ public class ImporterAnyFunction {
         }
 
         if (hasColumnNames != null) {
-            logger.log(Level.INFO, "hasColumnNames: {0}", hasColumnNames);
             model.setHasColumnNames(hasColumnNames);
             if (hasColumnNames && columnNamesRowIndex != null) {
                 model.setColumnNamesRowIndex(columnNamesRowIndex - 1);
-                logger.log(Level.INFO, "columnNamesRowIndex: {0}", columnNamesRowIndex);
             }
         }
 
         if (hasRowNames != null) {
-            logger.log(Level.INFO, "hasRowNames: {0}", hasRowNames);
             model.setHasRowNames(hasRowNames);
             if (hasRowNames && rowNamesColumnIndex != null) {
                 model.setRowNamesColumnIndex(rowNamesColumnIndex - 1);
-                logger.log(Level.INFO, "rowNamesColumnIndex: {0}", rowNamesColumnIndex);
             }
         }
 
         if (rowstart != null) {
             model.setRowStart(rowstart - 1);
-            logger.log(Level.INFO, "rowstart: {0}", rowstart);
         }
         if (rowend != null) {
             model.setRowEnd(rowend - 1);
-            logger.log(Level.INFO, "rowend: {0}", rowend);
         }
         if (colstart != null) {
             model.setColStart(colstart - 1);
-            logger.log(Level.INFO, "colstart: {0}", colstart);
         }
         if (colend != null) {
             model.setColEnd(colend - 1);
-            logger.log(Level.INFO, "colend: {0}", colend);
         }
-
-        logger.log(Level.INFO, "model column count: {0}", model.getColumnCount());
-        logger.log(Level.INFO, "model row count: {0}", model.getRowCount());
-
+        
+        if (logger.isLoggable(Level.INFO)) {
+            logger.log(Level.INFO, "file: {0}", file);
+            logger.log(Level.INFO, "hasColumnNames: {0}", hasColumnNames);
+            logger.log(Level.INFO, "columnNamesRowIndex: {0}", columnNamesRowIndex);
+            logger.log(Level.INFO, "hasRowNames: {0}", hasRowNames);
+            logger.log(Level.INFO, "rowNamesColumnIndex: {0}", rowNamesColumnIndex);
+            logger.log(Level.INFO, "rowstart: {0}", rowstart);
+            logger.log(Level.INFO, "rowend: {0}", rowend);
+            logger.log(Level.INFO, "colstart: {0}", colstart);
+            logger.log(Level.INFO, "colend: {0}", colend);
+            
+            logger.log(Level.INFO, "model column count: {0}", model.getColumnCount());
+            logger.log(Level.INFO, "model row count: {0}", model.getRowCount());
+        }
+        
+        if (columnClasses == null || columnClasses.length == 0) {
+            model.convertColumnsToNumericIfPossible();
+        }
+        
         ARCTable table = new ARCTable();
         table.setNoneOptionCaption("");
 
@@ -131,34 +137,54 @@ public class ImporterAnyFunction {
             model.convertToText(i, modelhelper.getColumnData(i));
         }
 
-        for (int j = 0; i < model.getColumnCount(); i++, j++) {
-            if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.NUMERIC.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.NUMERIC, i);
-                model.convertToNumeric(i);
-            } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.CHARACTER.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER, i);
-                model.convertToText(i, modelhelper.getColumnData(i));
-            } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.FACTOR.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.FACTOR, i);
-                model.convertToText(i, modelhelper.getColumnData(i));
-            } else if (columnClasses[j].contains(DataImportPanel.ColumnType.DATE.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.DATE, i);
-                if (columnClasses[j].contains("=")) {
-                    model.convertToDate(i,
-                            new String[]{RUtil.convertPatternFromRFormat(
-                                columnClasses[j].substring(columnClasses[j].indexOf('=') + 1))});
-                } else {
-                    model.convertToDate(i, RUtil.parseDatePattern);
-                }
-            } else if (columnClasses[j].contains(DataImportPanel.ColumnType.POSIXCT.toString())) {
-                table.setColumnSelectorOption(DataImportPanel.ColumnType.POSIXCT, i);
+        if (columnClasses != null && columnClasses.length > 0) {
+            if (columnClasses.length == model.getColumnCount()) {
+                for (int j = 0; i < model.getColumnCount(); i++, j++) {
+                    if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.NUMERIC.toString())) {
+                        table.setColumnSelectorOption(DataImportPanel.ColumnType.NUMERIC, i);
+                        model.convertToNumeric(i);
+                    } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.CHARACTER.toString())) {
+                        table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER, i);
+                        model.convertToText(i, modelhelper.getColumnData(i));
+                    } else if (columnClasses[j].equalsIgnoreCase(DataImportPanel.ColumnType.FACTOR.toString())) {
+                        table.setColumnSelectorOption(DataImportPanel.ColumnType.FACTOR, i);
+                        model.convertToText(i, modelhelper.getColumnData(i));
+                    } else if (columnClasses[j].contains(DataImportPanel.ColumnType.DATE.toString())) {
+                        table.setColumnSelectorOption(DataImportPanel.ColumnType.DATE, i);
+                        if (columnClasses[j].contains("=")) {
+                            model.convertToDate(i,
+                                    new String[]{RUtil.convertPatternFromRFormat(
+                                        columnClasses[j].substring(columnClasses[j].indexOf('=') + 1))});
+                        } else {
+                            model.convertToDate(i, RUtil.parseDatePattern);
+                        }
+                    } else if (columnClasses[j].contains(DataImportPanel.ColumnType.POSIXCT.toString())) {
+                        table.setColumnSelectorOption(DataImportPanel.ColumnType.POSIXCT, i);
 
-                if (columnClasses[j].contains("=")) {
-                    model.convertToPOSIXct(i,
-                            new String[]{RUtil.convertPatternFromRFormat(
-                                columnClasses[j].substring(columnClasses[j].indexOf('=') + 1))});
+                        if (columnClasses[j].contains("=")) {
+                            model.convertToPOSIXct(i,
+                                    new String[]{RUtil.convertPatternFromRFormat(
+                                        columnClasses[j].substring(columnClasses[j].indexOf('=') + 1))});
+                        } else {
+                            model.convertToPOSIXct(i, RUtil.parsePOSIXctPattern);
+                        }
+                    }
+                }
+            } else {
+                logger.log(Level.WARNING,
+                        "column classes vector must be equal to the table column count: column classes length: {0}, table column count: {1}",
+                        new Integer[]{columnClasses.length, model.getColumnCount()});
+            }
+        } else {
+            i = 0;
+            if (model.hasRowNames()) {
+                i = 1;
+            }
+            for (; i < table.getColumnCount(); i++) {
+                if (model.getColumnClass(i) == Double.class) {
+                    table.setColumnSelectorOption(DataImportPanel.ColumnType.NUMERIC, i);
                 } else {
-                    model.convertToPOSIXct(i, RUtil.parsePOSIXctPattern);
+                    table.setColumnSelectorOption(DataImportPanel.ColumnType.CHARACTER, i);
                 }
             }
         }
@@ -275,7 +301,7 @@ public class ImporterAnyFunction {
 
         ImportTableModel model = new ImportTableModel();
 
-        model.addRow(rows);
+        model.addRows(rows);
 
         return model;
     }

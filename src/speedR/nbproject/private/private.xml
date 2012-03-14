@@ -3,8 +3,20 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/1">
         <file>
             <url>src/at/ac/ait/speedr/importwizard/steps/DataImportPanel.java</url>
-            <line>647</line>
-            <line>673</line>
+            <line>658</line>
+            <line>684</line>
         </file>
     </editor-bookmarks>
+    <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/1">
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/SpeedRFrame.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importwizard/steps/CSVDataImportWizardStep.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importwizard/steps/DataImportPanel.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importwizard/steps/DataImportPanelUserActionListener.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/codegen/ImportAndFilterCodeGen.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importwizard/WizardPanel.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importwizard/steps/DataSourcePanel.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importwizard/steps/ImportTableModel.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/importany/ImporterAnyFunction.java</file>
+        <file>file:/E:/projects/r-forge/speedR/src/speedR/src/at/ac/ait/speedr/workspace/RUtil.java</file>
+    </open-files>
 </project-private>

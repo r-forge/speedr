@@ -7,11 +7,7 @@ import java.beans.PropertyChangeSupport;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.TreeMap;
+import java.util.*;
 import javax.swing.table.AbstractTableModel;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -40,9 +36,7 @@ public class ImportTableModel extends AbstractTableModel {
     private int rowEnd = 0;
     private int colStart = 0;
     private int colEnd = 0;
-    private boolean addingRow = false;
     private boolean clearing = false;
-    private boolean fireTableStructureChangedCalled = false;
 
     public ImportTableModel() {
         allData = new TreeMap<Integer, Object[]>();
@@ -95,56 +89,6 @@ public class ImportTableModel extends AbstractTableModel {
             return String.class;
         }
         return classes.get(getRealColumnIndex(columnIndex));
-    }
-
-    private boolean checkAllColumnClasses() {
-        boolean returnval = false;
-        boolean flag;
-        for (int columnIndex = 0; columnIndex < getColumnCount(); columnIndex++) {
-            flag = true;
-            if (columnMismatchCounter.get(getRealColumnIndex(columnIndex)) >= MAXMISMATCH) {
-                continue;
-            }
-            for (int rowIndex = 0; rowIndex < getRowCount(); rowIndex++) {
-                if (getValueAt(rowIndex, columnIndex) instanceof String) {
-                    flag = false;
-                    if (classes.get(getRealColumnIndex(columnIndex)) == Double.class) {
-                        classes.put(getRealColumnIndex(columnIndex), String.class);
-                        returnval = true;
-                    }
-                    break;
-                }
-            }
-            if (flag) {
-                returnval = true;
-                classes.put(getRealColumnIndex(columnIndex), Double.class);
-            }
-        }
-
-        return returnval;
-    }
-
-    private boolean checkColumnClass(int columnIndex) {
-        if (columnMismatchCounter.get(getRealColumnIndex(columnIndex)) >= MAXMISMATCH) {
-            return false;
-        }
-
-        boolean flag = true;
-
-        for (int rowIndex = 0; rowIndex < getRowCount(); rowIndex++) {
-            if (getValueAt(rowIndex, columnIndex) instanceof String) {
-                flag = false;
-                break;
-            }
-        }
-
-        if (flag) {
-            classes.put(getRealColumnIndex(columnIndex), Double.class);
-        } else {
-            classes.put(getRealColumnIndex(columnIndex), String.class);
-        }
-
-        return flag;
     }
 
     public int getColumnCount() {
@@ -228,33 +172,7 @@ public class ImportTableModel extends AbstractTableModel {
         }
     }
 
-    public void addRow(List<String[]> rowData) {
-        addingRow = true;
-        int index = allData.size();
-
-        boolean colendchanged = false;
-
-        Object[] newRow;
-        for (String[] row : rowData) {
-            newRow = convertRowAndSetColumnClasses(row);
-
-            allData.put(index++, newRow);
-            if (maxColumnCount < row.length) {
-                maxColumnCount = row.length;
-                colendchanged = true;
-            }
-        }
-
-        if (colendchanged) {
-            setColEnd(maxColumnCount - 1);
-        }
-
-        setRowEnd(allData.size() - 1);
-        addingRow = false;
-    }
-
     public void addRows(List<String[]> rowData) {
-        addingRow = true;
         int index = allData.size();
         Object[] newRow;
 
@@ -277,8 +195,14 @@ public class ImportTableModel extends AbstractTableModel {
             }
         }
 
+        int oldRowEnd = this.rowEnd;        
         setRowEnd(allData.size() - 1);
-        addingRow = false;
+        
+        //first time some rows added to this model and in case that the column count is 1,
+        //then fireTableStructureChanged() has to be called, because nowhere else it is called.
+        if(maxColumnCount == 1 && oldRowEnd == 0 && allData.size() > 0){
+            fireTableStructureChanged();
+        }
     }
 
     public void convertColumnsToNumericIfPossible() {
@@ -301,51 +225,11 @@ public class ImportTableModel extends AbstractTableModel {
         }
     }
 
-    private Object[] convertRowAndSetColumnClasses(String[] row) {
-        boolean flag = false;
-        Object[] newRow = new Object[row.length];
-        Double d;
-        for (int i = 0; i < row.length; i++) {
-            if (!classes.containsKey(i)) {
-                classes.put(i, Double.class);
-                columnMismatchCounter.put(i, 0);
-            }
-
-            int mismatchcount = columnMismatchCounter.get(i);
-            if (mismatchcount < MAXMISMATCH) {
-                if (StringUtils.stripToNull(row[i]) == null
-                        || row[i].trim().equalsIgnoreCase("NA")
-                        || row[i].trim().equalsIgnoreCase("NaN")) {
-                    newRow[i] = null;
-                } else if (NumberUtils.isNumber(row[i])) {
-                    d = NumberUtils.createDouble(row[i]);
-                    newRow[i] = d;
-                } else {
-                    columnMismatchCounter.put(i, ++mismatchcount);
-                    classes.put(i, String.class);
-
-                    newRow[i] = row[i];
-                    if (!allData.isEmpty() && classes.get(i) != String.class) {
-                        flag = true;
-                    }
-                }
-            } else {
-                newRow[i] = StringUtils.stripToNull(row[i]);
-            }
-        }
-        if (flag) {
-            fireTableStructureChanged();
-        }
-        return newRow;
-    }
-
     public boolean hasColumnNames() {
         return hasColnames;
     }
 
     public void setHasColumnNames(boolean hasColnames) {
-        fireTableStructureChangedCalled = false;
-
         if (this.hasColnames != hasColnames) {
             boolean oldValue = this.hasColnames;
             this.hasColnames = hasColnames;
@@ -353,17 +237,10 @@ public class ImportTableModel extends AbstractTableModel {
                 if (hasColnames && rowStart <= colnamesRowIndex) {
                     setRowStart(colnamesRowIndex + 1);
                 }
-//                else {
-//                    checkAllColumnClasses();
-//                }
-//                if (!fireTableStructureChangedCalled) {
                 fireTableStructureChanged();
-//                }
             }
             propertyChangeSupport.firePropertyChange(PROP.HASCOLUMNNAMES.name(), oldValue, this.hasColnames);
         }
-
-        fireTableStructureChangedCalled = false;
     }
 
     public void setColumnNamesRowIndex(int colnamesRowIndex) {
@@ -397,13 +274,6 @@ public class ImportTableModel extends AbstractTableModel {
             } else {
                 setColEnd(this.colEnd + 1);
             }
-//            if (this.colEnd > 0) {
-//            if (this.hasRownames && this.colEnd == maxColumnCount - 1) {
-//                setColEnd(this.colEnd - 1);
-//            } else if(!this.hasRownames && this.colEnd == maxColumnCount - 2) {
-//                setColEnd(this.colEnd + 1);
-//            }
-//            }
             propertyChangeSupport.firePropertyChange(PROP.HASROWNAMES.name(), oldValue, this.hasRownames);
         }
     }
@@ -420,6 +290,10 @@ public class ImportTableModel extends AbstractTableModel {
         }
     }
 
+    public int getRownamesColumnIndex() {
+        return rownamesColumnIndex;
+    }
+
     public void setRowStart(int rowStart) {
         if (this.rowStart != rowStart) {
             int oldStartValue = this.rowStart;
@@ -430,10 +304,6 @@ public class ImportTableModel extends AbstractTableModel {
             } else {
                 fireTableRowsInserted(0, oldStartValue - rowStart - 1);
             }
-//            if (!clearing && checkAllColumnClasses()) {
-//                fireTableStructureChanged();
-//                fireTableStructureChangedCalled = true;
-//            }
             propertyChangeSupport.firePropertyChange(PROP.RANGE_ROWSTART.name(), oldStartValue, this.rowStart);
         }
     }
@@ -460,9 +330,6 @@ public class ImportTableModel extends AbstractTableModel {
                     fireTableRowsInserted(oldEndValue - rowStart, this.rowEnd - rowStart);
                 }
             }
-//            if (!addingRow && !clearing && checkAllColumnClasses()) {
-//                fireTableStructureChanged();
-//            }
             propertyChangeSupport.firePropertyChange(PROP.RANGE_ROWEND.name(), oldEndValue, this.rowEnd);
         }
     }

@@ -47,21 +47,21 @@ public class ExcelDataImportWizardStep implements
     }
 
     public void readSettings(WizardPanel settings) {
-        if (impPanel.getTableModel().getMaxColumnCount() > 0) {
-            impPanel.resetRowAndColumnsMaxAndMin();
-            impPanel.getTableModel().clearAll();
+        if (getComponent().getTableModel().getMaxColumnCount() > 0) {
+            getComponent().resetRowAndColumnsMaxAndMin();
+            getComponent().getTableModel().clearAll();
         }
         
         this.settings = settings;
         dataFileExtension = (String) settings.getProperty(DataSourceWizardStep.PROP_EXTENSION);
         if (settings.getProperty(DataSourceWizardStep.PROP_DATASOURCE) == DataSourcePanel.PROP_FILE_DATASOURCE) {
-            impPanel.setConfigurationPanelEnabled(false);
+            getComponent().setConfigurationPanelEnabled(false);
             dataFile = (File) settings.getProperty(DataSourceWizardStep.PROP_FILE);
         }
     }
 
     public void storeSettings(WizardPanel settings) {
-        settings.putProperty(DataImportPanel.PROP_VARIABLENAME, impPanel.getVariableName());
+        settings.putProperty(DataImportPanel.PROP_VARIABLENAME, getComponent().getVariableName());
     }
 
     public boolean isValid() {
@@ -99,7 +99,7 @@ public class ExcelDataImportWizardStep implements
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName() == DataImportPanel.PROP_VARIABLENAME) {
-            String varname = impPanel.getVariableName();
+            String varname = getComponent().getVariableName();
 
             if (varname.equals("") || Character.isDigit(varname.charAt(0))
                     || !varname.equals(varname.replaceAll("[ -+*/\\()=!~`@#$%^&*<>,?;:\"\']", "."))) {
@@ -113,14 +113,14 @@ public class ExcelDataImportWizardStep implements
     }
 
     public void validate() throws WizardValidationException {
-        String varname = impPanel.getVariableName();
+        String varname = getComponent().getVariableName();
         if (varname == null || varname.trim().equals("")) {
             throw new WizardValidationException("Please set a variable name");
         }
 
         if (WorkspaceView.getInstance().hasVariable(varname)) {
             int showConfirmDialog =
-                    JOptionPane.showConfirmDialog(impPanel, "A variable with the name "
+                    JOptionPane.showConfirmDialog(getComponent(), "A variable with the name "
                     + varname + " exsists already!\n" + "Do you want to replace it?");
             if (showConfirmDialog != JOptionPane.YES_OPTION) {
                 throw new WizardValidationException("Variable name exists");
@@ -139,7 +139,7 @@ public class ExcelDataImportWizardStep implements
             excelProcessor.start();
 
             CSVReaderWorker worker = new CSVReaderWorker(pIn,
-                    impPanel.getTableModel());
+                    getComponent().getTableModel());
             worker.execute();
 
             worker.get();
@@ -219,11 +219,11 @@ public class ExcelDataImportWizardStep implements
         protected Object doInBackground() throws Exception {
             try {
                 CSVReader csvReader =
-                        new CSVReader(new InputStreamReader(in), ',', '"');
-                if (dataFileExtension.equals("xlsx")) {
-                    //skip excel column names (A,B,C ...)
-                    csvReader.readNext();
-                }
+                        new CSVReader(new InputStreamReader(in), ',', '"','\0');
+//                if (dataFileExtension.equals("xlsx")) {
+//                    //skip excel column names (A,B,C ...)
+//                    csvReader.readNext();
+//                }
 
                 ImportTableModelHelper modelhelper = new ImportTableModelHelper();
                 int line = 0;
@@ -236,7 +236,7 @@ public class ExcelDataImportWizardStep implements
                 }
 
                 modelhelper.close();
-                impPanel.setImportTableModelHelper(modelhelper);
+                getComponent().setImportTableModelHelper(modelhelper);
                 
                 csvReader.close();
             } catch (IOException ex) {
@@ -251,7 +251,7 @@ public class ExcelDataImportWizardStep implements
         @Override
         protected void process(List<String[]> chunks) {
             try {
-                tableModel.addRow(chunks);
+                tableModel.addRows(chunks);
             } catch (OutOfMemoryError err) {
                 outOfMemoryHandle();
             }
@@ -260,7 +260,7 @@ public class ExcelDataImportWizardStep implements
         @Override
         protected void done() {
             setValid(true);
-            impPanel.setConfigurationPanelEnabled(true);
+            getComponent().setConfigurationPanelEnabled(true);
             tableModel.convertColumnsToNumericIfPossible();
         }
     }
@@ -268,6 +268,6 @@ public class ExcelDataImportWizardStep implements
     private void outOfMemoryHandle() {
         isStopped = true;
         settings.putProperty(WizardPanel.PROP_WARNING_MESSAGE, "Out of available memory!");
-        JOptionPane.showMessageDialog(impPanel, "Out of memory!\nPlease restart R and call speedR with an increased value in Mb!");
+        JOptionPane.showMessageDialog(getComponent(), "Out of memory!\nPlease restart R and call speedR with an increased value in Mb!");
     }
 }

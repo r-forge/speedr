@@ -1,8 +1,8 @@
 Package:	speedR
-Version:	1.1-34
+Version:	1.1-35
 Title:	A GUI based importing and filtering tool
 Author:	Ilhami Visne
 Maintainer:	Ilhami Visne <ilhami.visne@ait.ac.at>
 Description:	speedR is a gui based utility to import and to filter matrix alike data objects easily.
-Depends: R (>= 2.10), rJava (>= 0.8-5), speedRlibs (== 1.1-33), speedRlibTF (== 0.3-33)
+Depends: R (>= 2.10), rJava (>= 0.8-5), speedRlibs (== 1.1-35), speedRlibTF (== 0.3-33)
 License:	LGPL (>= 2.1)
