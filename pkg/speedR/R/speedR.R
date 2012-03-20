@@ -176,8 +176,7 @@ speedR.importany <-
 				classes <- c(classes,cls[1])
 			}
 			
-			#o_dim = dim(o)
-			
+			#o_dim = dim(o)			
 			#if(is.null(o_dim) || length(o_dim) == 1){
 			#	dimANDlengthINFO <- c(dimANDlengthINFO, length(o))
 			#}else{
