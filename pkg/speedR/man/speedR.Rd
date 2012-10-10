@@ -4,6 +4,14 @@
 \description{
   Starts the speedR GUI window.
 }
+
+\references{
+  Ilhami Visne, Ahmet Yildiz, Erkan Dilaveroglu, Klemens Vierlinger, Christa Noehammer, Friedrich Leisch, Albert Kriegner (2012).
+  speedR:  An R Package for Interactive Data Import, Filtering and Ready-to-Use Code Generation.
+  \emph{Journal of Statistical Software}, \bold{51}(2), 1--12.
+  \url{http://www.jstatsoft.org/v51/i02/}.
+}
+
 \usage{
   speedR(maxmemory=NULL,...)
 }

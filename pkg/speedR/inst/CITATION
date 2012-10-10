@@ -1,0 +1,25 @@
+citHeader("To cite speedR in publications use:")
+
+citEntry(entry = "Article",
+  title        = "{speedR}:  An {R} Package for Interactive Data Import, Filtering and Ready-to-Use Code Generation",
+  author       = personList(as.person("Ilhami Visne"),
+                   as.person("Ahmet Yildiz"),
+                   as.person("Erkan Dilaveroglu"),
+                   as.person("Klemens Vierlinger"),
+                   as.person("Christa N{\\\"o}hammer"),
+                   as.person("Friedrich Leisch"),
+                   as.person("Albert Kriegner")),
+  journal      = "Journal of Statistical Software",
+  year         = "2012",
+  volume       = "51",
+  number       = "2",
+  pages        = "1--12",
+  url          = "http://www.jstatsoft.org/v51/i02/",
+
+  textVersion  =
+  paste("Ilhami Visne, Ahmet Yildiz, Erkan Dilaveroglu, Klemens Vierlinger, Christa Noehammer, Friedrich Leisch, Albert Kriegner (2012).",
+        "speedR:  An R Package for Interactive Data Import, Filtering and Ready-to-Use Code Generation.",
+        "Journal of Statistical Software, 51(2), 1-12.",
+        "URL http://www.jstatsoft.org/v51/i02/.")
+)
+
