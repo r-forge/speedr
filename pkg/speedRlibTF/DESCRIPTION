@@ -1,7 +1,7 @@
 Package:	speedRlibTF
-Version:	0.3-35
+Version:	0.3-39
 Title:	speedR's table filter library
 Author:	Ilhami Visne
 Maintainer:	Ilhami Visne <ilhami.visne@ait.ac.at>
 Description:	This package contains the "tablefilter" library, which is used by speedR.
-License:	file LICENSE
+License:	GPL (>= 2)
