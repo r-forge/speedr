@@ -1,11 +1,12 @@
 .packageName <- "speedR"
+.speedRInitialized <- FALSE
 
 .onLoad <- function(libname, pkgname){
-	assign(".speedRInitialized", FALSE, envir = as.environment(1))
+	.speedRInitialized <<- FALSE	
 }
 
 speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){		
-	if(!get(".speedRInitialized",envir = as.environment(1))){
+	if(!.speedRInitialized){
 		jvmparameters = c()
 		if(debug){
 			jvmparameters = c("-agentlib:jdwp=transport=dt_socket,server=y,address=localhost:8001")
@@ -46,7 +47,7 @@ speedR.init<-function(maxmemory = NULL,loglevel = "WARNING",debug = FALSE){
 		)
 		
 		if(init)
-			assign(".speedRInitialized", TRUE, envir = as.environment(1))
+			.speedRInitialized <<- TRUE
 		else
 			stop("speedR could not be initialized")
 	}
